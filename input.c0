@@ -1,0 +1,7 @@
+fn foo(i: int) -> int {
+    return -i;
+}
+
+fn main() -> void {
+    putint("12 213 wdasd123\n\t\r\\\"\'\\\\asd  ");
+}
