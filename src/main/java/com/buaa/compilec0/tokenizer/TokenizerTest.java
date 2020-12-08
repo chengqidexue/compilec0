@@ -18,6 +18,7 @@ public class TokenizerTest {
             while (true) {
                 var token = tokenizer.nextToken();
                 if (token.getTokenType().equals(TokenType.EOF)) {
+                    tokens.add(token);
                     break;
                 }
                 tokens.add(token);

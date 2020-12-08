@@ -1,8 +1,31 @@
 package com.buaa.compilec0.error;
 
 public enum ErrorCode {
+    /**
+     * 词法分析错误
+     */
     NoError, // Should be only used internally.
-    StreamError, EOF, InvalidInput, InvalidIdentifier, IntegerOverflow, // int32_t overflow.
-    NoBegin, NoEnd, NeedIdentifier, ConstantNeedValue, NoSemicolon, InvalidVariableDeclaration, IncompleteExpression,
-    NotDeclared, AssignToConstant, DuplicateDeclaration, NotInitialized, InvalidAssignment, InvalidPrint, ExpectedToken, InvalidOperator
+    StreamError,
+    EOF,
+    InvalidInput,
+    InvalidIdentifier,
+    IntegerOverflow, // int32_t overflow.
+    NoBegin,
+    NoEnd,
+    /**
+     * 语法分析错误
+     */
+    NeedIdentifier,
+    ConstantNeedValue,
+    NoSemicolon,
+    InvalidVariableDeclaration,
+    IncompleteExpression,
+    NotDeclared,
+    AssignToConstant,
+    DuplicateDeclaration,
+    NotInitialized,
+    InvalidAssignment,
+    InvalidPrint,
+    ExpectedToken,
+    InvalidOperator
 }

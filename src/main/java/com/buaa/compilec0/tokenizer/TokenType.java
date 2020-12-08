@@ -140,7 +140,7 @@ public enum TokenType {
 //    LParen,
 //    /** 右括号 */
 //    RParen,
-//    /** 文件尾 */
+    /** 文件尾 */
     EOF;
 
     @Override
@@ -222,42 +222,10 @@ public enum TokenType {
                 return "SEMICOLON";
             case COMMENT:
                 return "COMMENT";
-
-
             case None:
                 return "NullToken";
-//            case Begin:
-//                return "Begin";
-//            case Const:
-//                return "Const";
-//            case Div:
-//                return "DivisionSign";
-//            case EOF:
-//                return "EOF";
-//            case End:
-//                return "End";
-//            case Equal:
-//                return "EqualSign";
-//            case Ident:
-//                return "Identifier";
-//            case LParen:
-//                return "LeftBracket";
-//            case Minus:
-//                return "MinusSign";
-//            case Mult:
-//                return "MultiplicationSign";
-//            case Plus:
-//                return "PlusSign";
-//            case Print:
-//                return "Print";
-//            case RParen:
-//                return "RightBracket";
-//            case Semicolon:
-//                return "Semicolon";
-//            case Uint:
-//                return "UnsignedInteger";
-//            case Var:
-//                return "Var";
+            case EOF:
+                return "EOF";
             default:
                 return "InvalidToken";
         }
