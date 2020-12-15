@@ -3,29 +3,30 @@ package com.buaa.compilec0.symbol;
 import com.buaa.compilec0.error.AnalyzeError;
 import com.buaa.compilec0.error.CompileError;
 import com.buaa.compilec0.error.ErrorCode;
-import com.buaa.compilec0.tokenizer.Token;
 import com.buaa.compilec0.util.Pos;
 
-import javax.xml.stream.events.DTD;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class FunctionSymbol extends Symbol {
     //函数的参数列表
     //参数名:符号
-    private DataType returnType = this.getDataType();
+    private DataType returnType;
     private HashMap<String, ParamSymbol> paramsMap;
-
-    public DataType getReturnType() {
-        return returnType;
-    }
-
     private ArrayList<ParamSymbol> params;
 
     public FunctionSymbol(SymbolType symbolType, DataType dataType, String symbolName, int level, int offset, Pos startPos) {
         super(symbolType, dataType, symbolName, level, offset, startPos);
         this.paramsMap = new HashMap<>();
         this.params = new ArrayList<>();
+    }
+
+    public DataType getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(DataType returnType) {
+        this.returnType = returnType;
     }
 
     public HashMap<String, ParamSymbol> getParamsMap() {
@@ -65,15 +66,6 @@ public class FunctionSymbol extends Symbol {
      */
     public DataType getParamDataTypeByIndex(int paramIndex) {
         return params.get(paramIndex).getDataType();
-    }
-
-    /**
-     * 判断参数是否是constant类型的
-     * @param paramName
-     * @return
-     */
-    public boolean isParamConstant(String paramName) {
-        return paramsMap.get(paramName).isConstant();
     }
 
     /**

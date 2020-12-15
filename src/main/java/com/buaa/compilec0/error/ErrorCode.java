@@ -22,12 +22,18 @@ public enum ErrorCode {
     IncompleteExpression,
     NotDeclared,
     AssignToConstant,
+    AssignToFunction,
     DuplicateDeclaration,
+    NotAFunction,
     NotInitialized,
     InvalidAssignment,
     InvalidPrint,
     ExpectedToken,
     InvalidOperator,
     SymbolLevelNotExist,
-    NotExistDataType
+    NotExistDataType,
+    InvalidDataType,
+    FunctionParamDataTypeNotMap,
+    FunctionParamsNotSuit
+
 }
