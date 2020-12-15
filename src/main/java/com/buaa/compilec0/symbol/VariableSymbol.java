@@ -1,10 +1,12 @@
 package com.buaa.compilec0.symbol;
 
+import com.buaa.compilec0.util.Pos;
+
 public class VariableSymbol extends Symbol{
     boolean initialized;
 
-    public VariableSymbol(SymbolType symbolType, DataType dataType, String symbolName, int level, int offset, boolean initialized) {
-        super(symbolType, dataType, symbolName, level, offset);
+    public VariableSymbol(SymbolType symbolType, DataType dataType, String symbolName, int level, int offset, Pos startPos, boolean initialized) {
+        super(symbolType, dataType, symbolName, level, offset, startPos);
         this.initialized = initialized;
     }
 
@@ -14,12 +16,5 @@ public class VariableSymbol extends Symbol{
 
     public void setInitialized(boolean initialized) {
         this.initialized = initialized;
-    }
-
-    @Override
-    public String toString() {
-        return "VariableSymbol{" +
-                "initialized=" + initialized +
-                '}';
     }
 }

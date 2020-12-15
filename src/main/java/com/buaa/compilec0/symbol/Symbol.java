@@ -1,18 +1,22 @@
 package com.buaa.compilec0.symbol;
 
-public class Symbol {
-    private SymbolType symbolType;
-    private DataType dataType;
-    private String symbolName;
-    private int level;
-    private int offset;
+import com.buaa.compilec0.util.Pos;
 
-    public Symbol(SymbolType symbolType, DataType dataType, String symbolName, int level, int offset) {
+public class Symbol {
+    private SymbolType symbolType;      //符号的类型，常量，变量，函数，参数
+    private DataType dataType;          //数据类型，如果是函数的话，就是返回类型
+    private String symbolName;          //符号的名称ident
+    private int level;                  //符号所在的层次
+    private int offset;                 //在栈上的偏移
+    private Pos startPos;               //符号的起始位置
+
+    public Symbol(SymbolType symbolType, DataType dataType, String symbolName, int level, int offset, Pos startPos) {
         this.symbolType = symbolType;
         this.dataType = dataType;
         this.symbolName = symbolName;
         this.level = level;
         this.offset = offset;
+        this.startPos = startPos;
     }
 
     @Override
@@ -23,6 +27,7 @@ public class Symbol {
                 ", symbolName='" + symbolName + '\'' +
                 ", level=" + level +
                 ", offset=" + offset +
+                ", startPos=" + startPos +
                 '}';
     }
 
@@ -44,6 +49,14 @@ public class Symbol {
 
     public String getSymbolName() {
         return symbolName;
+    }
+
+    public Pos getStartPos() {
+        return startPos;
+    }
+
+    public void setStartPos(Pos startPos) {
+        this.startPos = startPos;
     }
 
     public void setSymbolName(String symbolName) {

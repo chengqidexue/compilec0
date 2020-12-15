@@ -4,7 +4,7 @@ public enum ErrorCode {
     /**
      * 词法分析错误
      */
-    NoError, // Should be only used internally.
+    NoError,        // Should be only used internally.
     StreamError,
     EOF,
     InvalidInput,
@@ -27,5 +27,7 @@ public enum ErrorCode {
     InvalidAssignment,
     InvalidPrint,
     ExpectedToken,
-    InvalidOperator
+    InvalidOperator,
+    SymbolLevelNotExist,
+    NotExistDataType
 }

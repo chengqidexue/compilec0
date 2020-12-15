@@ -108,38 +108,6 @@ public enum TokenType {
     SEMICOLON,
     /** 注释 */
     COMMENT,
-
-
-//    /** 无符号整数 */
-//    Uint,
-//    /** 标识符 */
-//    Ident,
-//    /** Begin */
-//    Begin,
-//    /** End */
-//    End,
-//    /** Var */
-//    Var,
-//    /** Const */
-//    Const,
-//    /** Print */
-//    Print,
-//    /** 加号 */
-//    Plus,
-//    /** 减号 */
-//    Minus,
-//    /** 乘号 */
-//    Mult,
-//    /** 除号 */
-//    Div,
-//    /** 等号 */
-//    Equal,
-//    /** 分号 */
-//    Semicolon,
-//    /** 左括号 */
-//    LParen,
-//    /** 右括号 */
-//    RParen,
     /** 文件尾 */
     EOF;
 

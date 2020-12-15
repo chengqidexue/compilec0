@@ -4,17 +4,17 @@ public enum  SymbolType {
     /**
      * 常量
      */
-    Constant,
+    CONSTANT,
     /**
      * 变量
      */
-    Variable,
+    VARIABLE,
     /**
      * 函数
      */
-    Function,
+    FUNCTION,
     /**
      * 参数
      */
-    Param
+    PARAM
 }
