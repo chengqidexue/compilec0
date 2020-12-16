@@ -86,6 +86,9 @@ public class Tokenizer {
         char ch = it.peekChar();
         while (true) {
             var ascii = Integer.valueOf(ch);
+            if (ch == '\u0000') {
+                throw new TokenizeError(ErrorCode.InvalidString, startPos);
+            }
             if (ascii < 128 && ascii != 34 && ascii != 0x5c && ascii !=  0x0B && ascii != 0x0C && ascii != 0x0D) {
                 ch = it.nextChar();
                 tmpString.append(ch);

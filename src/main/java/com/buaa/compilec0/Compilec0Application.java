@@ -58,6 +58,7 @@ public class Compilec0Application {
         } catch (Exception e) {
             System.out.println("编译错误");
             e.printStackTrace();
+            printInputFile(inputFileName);
             System.exit(-1);
         }
     }
@@ -66,6 +67,26 @@ public class Compilec0Application {
     private static Tokenizer tokenize(StringIter iter) {
         var tokenizer = new Tokenizer(iter);
         return tokenizer;
+    }
+
+    /**
+     * 不可明说的方法
+     * 如果编译出错，就打印一下输入文件
+     * @param inputFileName
+     */
+    private static void printInputFile(String inputFileName) {
+        File inputFile = new File(inputFileName);
+        try {
+            InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(inputFile));
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            String nextLine = null;
+            while ((nextLine = bufferedReader.readLine()) != null) {
+                System.out.println(nextLine);
+            }
+            bufferedReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

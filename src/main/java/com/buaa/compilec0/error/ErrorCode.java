@@ -8,6 +8,7 @@ public enum ErrorCode {
     StreamError,
     EOF,
     InvalidInput,
+    InvalidString,
     InvalidIdentifier,
     IntegerOverflow, // int32_t overflow.
     NoBegin,

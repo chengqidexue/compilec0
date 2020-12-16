@@ -41,7 +41,16 @@ public class StringIter {
             return;
         }
         while (scanner.hasNext()) {
-            linesBuffer.add(scanner.nextLine() + '\n');
+            var nextLine = scanner.nextLine();
+            int i = 0;
+            for (; i < nextLine.length(); i++) {
+                var ch = nextLine.charAt(i);
+                if (!Character.isSpaceChar(ch)) break;
+            }
+            if (i < nextLine.length()-1 && nextLine.charAt(i) == '/' && nextLine.charAt(i+1) == '/') {
+                nextLine = "";
+            }
+            linesBuffer.add(nextLine + '\n');
         }
         // todo:check read \n?
         initialized = true;
