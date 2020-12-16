@@ -19,6 +19,7 @@ public class Compilec0Application {
         var inputFileName = args[0];
         var outputFileName = args[2];
 
+        printInputFile(inputFileName);
         InputStream input;
         if (inputFileName.equals("-")) {
             input = System.in;
@@ -58,7 +59,6 @@ public class Compilec0Application {
         } catch (Exception e) {
             System.out.println("编译错误");
             e.printStackTrace();
-            printInputFile(inputFileName);
             System.exit(-1);
         }
     }

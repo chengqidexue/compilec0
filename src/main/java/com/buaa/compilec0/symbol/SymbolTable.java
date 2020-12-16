@@ -169,7 +169,7 @@ public class SymbolTable {
     }
 
     /**
-     * 给函数增加一个参数
+     * 给函数增加一个参数 会检查是否有同名的参数
      * @param functionName  函数名称
      * @param dataType 参数类型
      * @param symbolName 参数名称
@@ -179,7 +179,7 @@ public class SymbolTable {
      * @throws CompileError
      */
     public void addFunctionParamSymbol(String functionName, DataType dataType, String symbolName, int level,
-                                       int offset, Pos startPos) throws CompileError{
+                                       int offset, Pos startPos, boolean isConstant) throws CompileError{
         var table = symbolTables.get(0);
         var functionSymbol = table.get(functionName);
         if (functionSymbol == null) {
@@ -188,7 +188,7 @@ public class SymbolTable {
         FunctionSymbol _functionSymbol;
         if (functionSymbol instanceof FunctionSymbol) {
             _functionSymbol = (FunctionSymbol) functionSymbol;
-            _functionSymbol.addParams(symbolName, new ParamSymbol(SymbolType.PARAM, dataType, symbolName, level, offset, startPos));
+            _functionSymbol.addParams(symbolName, new ParamSymbol(SymbolType.PARAM, dataType, symbolName, level, offset, startPos, isConstant));
         }
         else {
             throw new AnalyzeError(ErrorCode.NotAFunction, startPos);
@@ -218,5 +218,53 @@ public class SymbolTable {
         }
     }
 
+    /**
+     * 设置函数中局部变量的数目
+     * @param functionName  函数名称
+     * @param localVariableSize 局部变量的数目
+     * @param startPos  开始位置
+     * @throws CompileError
+     */
+    public void setFunctionLocalVariableSize(String functionName, int localVariableSize, Pos startPos) throws CompileError{
+        var table = symbolTables.get(0);
+        var functionSymbol = table.get(functionName);
+        if (functionSymbol == null) {
+            throw new AnalyzeError(ErrorCode.NotDeclared, startPos);
+        }
+        FunctionSymbol _functionSymbol;
+        if (functionSymbol instanceof FunctionSymbol) {
+            _functionSymbol = (FunctionSymbol) functionSymbol;
+            _functionSymbol.setLocalSize(localVariableSize);
+        }
+        else {
+            throw new AnalyzeError(ErrorCode.NotAFunction, startPos);
+        }
+    }
 
+    /**
+     * 判断函数中是否存在同名的参数
+     * 存在的话返回该参数，否则返回null
+     * @param functionName
+     * @param paramName
+     * @param startPos
+     * @return
+     * @throws CompileError
+     */
+    public ParamSymbol findFunctionParamSymbolBySymbolName(String functionName, String paramName, Pos startPos) throws CompileError {
+        ParamSymbol paramSymbol;
+        var table = symbolTables.get(0);
+        var functionSymbol = table.get(functionName);
+        if (functionSymbol == null) {
+            throw new AnalyzeError(ErrorCode.NotDeclared, startPos);
+        }
+        FunctionSymbol _functionSymbol;
+        if (functionSymbol instanceof FunctionSymbol) {
+            _functionSymbol = (FunctionSymbol) functionSymbol;
+            paramSymbol = _functionSymbol.getParamByParamName(paramName);
+        }
+        else {
+            throw new AnalyzeError(ErrorCode.NotAFunction, startPos);
+        }
+        return paramSymbol;
+    }
 }

@@ -1,5 +1,5 @@
 fn fib(x: int) -> int {
-    if x<=1 {
+    if x<=1 {       //asdasdasdasd
         return 1;
     }
     let result: int = fib(x - 1);
@@ -7,16 +7,20 @@ fn fib(x: int) -> int {
     return result;
 }
 
+               //asdassadadasd//
 fn main() -> int {
     let i: int = 0;
     let j: int;
-    j = getint();
+    j = 6;
     while i < j {
         putint(i);
         putchar(32);
         putint(fib(i));
         putln();
+        putstr("abcde");
+        putstr("asda\"sd");
         i = i + 1;
     }
     return 0;
 }
+//sadsdasdasd

@@ -7,7 +7,7 @@ public class Symbol {
     private DataType dataType;          //数据类型，如果是函数的话，就是返回类型
     private String symbolName;          //符号的名称ident
     private int level;                  //符号所在的层次
-    private int offset;                 //在栈上的偏移
+    private int offset;
     private Pos startPos;               //符号的起始位置
 
     public Symbol(SymbolType symbolType, DataType dataType, String symbolName, int level, int offset, Pos startPos) {

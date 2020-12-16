@@ -383,3 +383,63 @@ public class AnalyserTest {
 //            instructions.add(new Instruction(Operation.SUB));
 //        }
 //    }
+
+//        /**
+//         * TODO:将所有的库函数加入符号表
+//         */
+//        Pos defaultPos = new Pos(0, 0);
+//        String defaultParamName = "defaultName";
+//        /**
+//         * 读入一个有符号整数
+//         * GETINT,
+//         */
+//        symbolTable.addFunctionSymbol(DataType.VOID, "getint", level, getNextGlobalOffset(), defaultPos);
+//        symbolTable.setFunctionSymbolReturnType("getint", DataType.INT, defaultPos);
+//        /**
+//         * 读入一个浮点数
+//         * GETDOUBLE,
+//         */
+//        symbolTable.addFunctionSymbol(DataType.VOID, "getdouble", level, getNextGlobalOffset(), defaultPos);
+//        symbolTable.setFunctionSymbolReturnType("getdouble", DataType.DOUBLE, defaultPos);
+//        /**
+//         * 读入一个字符
+//         * GETCHAR,
+//         */
+//        symbolTable.addFunctionSymbol(DataType.VOID, "getchar", level, getNextGlobalOffset(), defaultPos);
+//        symbolTable.setFunctionSymbolReturnType("getchar", DataType.CHAR, defaultPos);
+//        /**
+//         * 输出一个整数
+//         * PUTINT,
+//         */
+//        symbolTable.addFunctionSymbol(DataType.VOID, "putint", level, getNextGlobalOffset(), defaultPos);
+//        symbolTable.setFunctionSymbolReturnType("putint", DataType.VOID, defaultPos);
+//        symbolTable.addFunctionParamSymbol("putint", DataType.INT, defaultParamName, level, getNextOffset(), defaultPos);
+//        /**
+//         * 输出一个浮点数
+//         * PUTDOUBLE,
+//         */
+//        symbolTable.addFunctionSymbol(DataType.VOID, "putdouble", level, getNextGlobalOffset(), defaultPos);
+//        symbolTable.setFunctionSymbolReturnType("putdouble", DataType.VOID, defaultPos);
+//        symbolTable.addFunctionParamSymbol("putdouble", DataType.DOUBLE, defaultParamName, level, getNextOffset(), defaultPos);
+//        /**
+//         * 输出一个字符
+//         * PUTCHAR,
+//         */
+//        symbolTable.addFunctionSymbol(DataType.VOID, "putchar", level, getNextGlobalOffset(), defaultPos);
+//        symbolTable.setFunctionSymbolReturnType("putchar", DataType.VOID, defaultPos);
+//        symbolTable.addFunctionParamSymbol("putchar", DataType.INT, defaultParamName, level, getNextOffset(), defaultPos);
+//
+//        /**
+//         * 将编号为这个整数的全局常量看作字符串输出
+//         *  PUTSTR,
+//         */
+//        symbolTable.addFunctionSymbol(DataType.VOID, "putstr", level, getNextGlobalOffset(), defaultPos);
+//        symbolTable.setFunctionSymbolReturnType("putstr", DataType.VOID, defaultPos);
+//        symbolTable.addFunctionParamSymbol("putstr", DataType.INT, defaultParamName, level, getNextOffset(), defaultPos);
+//
+//        /**
+//         * 输出一个换行
+//         * PUTLN,
+//         */
+//        symbolTable.addFunctionSymbol(DataType.VOID, "putln", level, getNextGlobalOffset(), defaultPos);
+//        symbolTable.setFunctionSymbolReturnType("putln", DataType.VOID, defaultPos);

@@ -11,10 +11,20 @@ import java.util.HashMap;
 public class FunctionSymbol extends Symbol {
     //函数的参数列表
     //参数名:符号
-    private DataType returnType;
-    private HashMap<String, ParamSymbol> paramsMap;
-    private ArrayList<ParamSymbol> params;
+    private DataType returnType;                        //返回类型
+    private HashMap<String, ParamSymbol> paramsMap;     //参数的Map
+    private ArrayList<ParamSymbol> params;              //参数的列表
+    private int localSize = 0;                          //局部变量的数量
 
+    /**
+     *
+     * @param symbolType    FUNCTION
+     * @param dataType      没有数据类型VOID
+     * @param symbolName    函数名
+     * @param level         属于第0层：0
+     * @param offset        globalOffset
+     * @param startPos      开始的位置
+     */
     public FunctionSymbol(SymbolType symbolType, DataType dataType, String symbolName, int level, int offset, Pos startPos) {
         super(symbolType, dataType, symbolName, level, offset, startPos);
         this.paramsMap = new HashMap<>();
@@ -29,20 +39,12 @@ public class FunctionSymbol extends Symbol {
         this.returnType = returnType;
     }
 
-    public HashMap<String, ParamSymbol> getParamsMap() {
-        return paramsMap;
+    public int getLocalSize() {
+        return localSize;
     }
 
-    public void setParamsMap(HashMap<String, ParamSymbol> paramsMap) {
-        this.paramsMap = paramsMap;
-    }
-
-    public ArrayList<ParamSymbol> getParams() {
-        return params;
-    }
-
-    public void setParams(ArrayList<ParamSymbol> params) {
-        this.params = params;
+    public void setLocalSize(int localSize) {
+        this.localSize = localSize;
     }
 
     /**
@@ -66,6 +68,15 @@ public class FunctionSymbol extends Symbol {
      */
     public DataType getParamDataTypeByIndex(int paramIndex) {
         return params.get(paramIndex).getDataType();
+    }
+
+    /**
+     * 根据参数名称返回参数
+     * @param paramName 参数名称
+     * @return  参数
+     */
+    public ParamSymbol getParamByParamName(String paramName) {
+        return paramsMap.get(paramName);
     }
 
     /**

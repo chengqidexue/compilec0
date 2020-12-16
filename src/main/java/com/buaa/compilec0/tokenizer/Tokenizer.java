@@ -29,8 +29,19 @@ public class Tokenizer {
         if (it.isEOF()) {
             return new Token(TokenType.EOF, "EOF", it.currentPos(), it.currentPos());
         }
-
         char peek = it.peekChar();
+        if (peek == '/') {
+            while (true) {
+                peek = it.peekChar();
+                if (peek == '\n') {
+                    break;
+                } else {
+                    it.nextChar();
+                }
+            }
+            return nextToken();
+        }
+
         if (Character.isDigit(peek)) {
             //分析整数
             return lexUInt();

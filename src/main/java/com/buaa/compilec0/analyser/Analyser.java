@@ -1,20 +1,20 @@
 package com.buaa.compilec0.analyser;
 
+import com.buaa.compilec0.assembler.Assembler;
 import com.buaa.compilec0.error.*;
-import com.buaa.compilec0.instruction.Instruction;
+import com.buaa.compilec0.library.LibFuncUtils;
+import com.buaa.compilec0.library.LibFunctions;
 import com.buaa.compilec0.symbol.*;
 import com.buaa.compilec0.tokenizer.Token;
 import com.buaa.compilec0.tokenizer.TokenType;
 import com.buaa.compilec0.tokenizer.Tokenizer;
-import com.buaa.compilec0.util.Pos;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public final class Analyser {
 
     Tokenizer tokenizer;
-    ArrayList<Instruction> instructions;
+    Assembler assembler = new Assembler();
 
     private SymbolTable symbolTable = new SymbolTable();
 
@@ -25,9 +25,39 @@ public final class Analyser {
     private int level = 0;
 
     /**
-     * 下一个变量的栈偏移
+     * 下一个全局变量的偏移
      */
-    private int nextOffset = 0;
+    private int globalOffset = 0;
+
+    private int getNextGlobalOffset() {
+        return globalOffset++;
+    }
+
+    /**
+     * 下一个局部变量的偏移
+     * 总是等于此时函数中的局部变量的偏移
+     * 这个也用来记录函数中共产生了多少个局部变量
+     */
+    private int localOffset = 0;
+
+    private void initLocalOffset() {
+        localOffset = 0;
+    }
+
+    private int getNextLocalOffset() {
+        return localOffset++;
+    }
+
+    /**
+     * 初始化的函数名称
+     */
+    private String initFunctionName = "INITIAL_FUNCTION";
+
+    /**
+     * 记录当前编译到哪层函数下了
+     * 初始化为init
+     */
+    private String nowFunctionName = "";
 
     /**
      * 所有的tokens
@@ -46,10 +76,9 @@ public final class Analyser {
     public Analyser(Tokenizer tokenizer) {
         this.allTokens = new ArrayList<>();
         this.tokenizer = tokenizer;
-        this.instructions = new ArrayList<>();
     }
 
-    public List<Instruction> analyse() throws CompileError {
+    public Assembler analyse() throws CompileError {
         /**
          * 首先将所有的tokens存到list中
          */
@@ -59,67 +88,12 @@ public final class Analyser {
          */
         symbolTable.pushSymbolTable();
         /**
-         * TODO:将所有的库函数加入符号表
+         * 设置工作函数为默认
          */
-        Pos defaultPos = new Pos(0, 0);
-        String defaultParamName = "defaultName";
-        /**
-         * 读入一个有符号整数
-         * GETINT,
-         */
-        symbolTable.addFunctionSymbol(DataType.VOID, "getint", level, getNextOffset(), defaultPos);
-        symbolTable.setFunctionSymbolReturnType("getint", DataType.INT, defaultPos);
-        /**
-         * 读入一个浮点数
-         * GETDOUBLE,
-         */
-        symbolTable.addFunctionSymbol(DataType.VOID, "getdouble", level, getNextOffset(), defaultPos);
-        symbolTable.setFunctionSymbolReturnType("getdouble", DataType.DOUBLE, defaultPos);
-        /**
-         * 读入一个字符
-         * GETCHAR,
-         */
-        symbolTable.addFunctionSymbol(DataType.VOID, "getchar", level, getNextOffset(), defaultPos);
-        symbolTable.setFunctionSymbolReturnType("getchar", DataType.CHAR, defaultPos);
-        /**
-         * 输出一个整数
-         * PUTINT,
-         */
-        symbolTable.addFunctionSymbol(DataType.VOID, "putint", level, getNextOffset(), defaultPos);
-        symbolTable.setFunctionSymbolReturnType("putint", DataType.VOID, defaultPos);
-        symbolTable.addFunctionParamSymbol("putint", DataType.INT, defaultParamName, level, getNextOffset(), defaultPos);
-        /**
-         * 输出一个浮点数
-         * PUTDOUBLE,
-         */
-        symbolTable.addFunctionSymbol(DataType.VOID, "putdouble", level, getNextOffset(), defaultPos);
-        symbolTable.setFunctionSymbolReturnType("putdouble", DataType.VOID, defaultPos);
-        symbolTable.addFunctionParamSymbol("putdouble", DataType.DOUBLE, defaultParamName, level, getNextOffset(), defaultPos);
-        /**
-         * 输出一个字符
-         * PUTCHAR,
-         */
-        symbolTable.addFunctionSymbol(DataType.VOID, "putchar", level, getNextOffset(), defaultPos);
-        symbolTable.setFunctionSymbolReturnType("putchar", DataType.VOID, defaultPos);
-        symbolTable.addFunctionParamSymbol("putchar", DataType.INT, defaultParamName, level, getNextOffset(), defaultPos);
-
-        /**
-         * 将编号为这个整数的全局常量看作字符串输出
-         *  PUTSTR,
-         */
-        symbolTable.addFunctionSymbol(DataType.VOID, "putstr", level, getNextOffset(), defaultPos);
-        symbolTable.setFunctionSymbolReturnType("putstr", DataType.VOID, defaultPos);
-        symbolTable.addFunctionParamSymbol("putstr", DataType.INT, defaultParamName, level, getNextOffset(), defaultPos);
-
-        /**
-         * 输出一个换行
-         * PUTLN,
-         */
-        symbolTable.addFunctionSymbol(DataType.VOID, "putln", level, getNextOffset(), defaultPos);
-        symbolTable.setFunctionSymbolReturnType("putln", DataType.VOID, defaultPos);
+        nowFunctionName = initFunctionName;
 
         analyseProgram();
-        return instructions;
+        return assembler;
     }
 
     /**
@@ -262,15 +236,6 @@ public final class Analyser {
     }
 
     /**
-     * 获取下一个变量的栈偏移
-     *
-     * @return
-     */
-    private int getNextOffset() {
-        return this.nextOffset++;
-    }
-
-    /**
      * program -> item*
      * item -> function | decl_stmt
      */
@@ -303,12 +268,11 @@ public final class Analyser {
         expect(TokenType.FN_KW);
         //IDENT
         var ident = expect(TokenType.IDENT);
-        symbolTable.addFunctionSymbol(DataType.VOID, ident.getValueString(), level, getNextOffset(), ident.getStartPos());
 
-        //函数定义中是一层符号表
-        ++level;
-        symbolTable.pushSymbolTable();
+        //设置工作函数
+        nowFunctionName = ident.getValueString();
 
+        symbolTable.addFunctionSymbol(DataType.VOID, ident.getValueString(), level, getNextGlobalOffset(), ident.getStartPos());
         //(
         expect(TokenType.L_PAREN);
         var token = peek();
@@ -327,28 +291,29 @@ public final class Analyser {
         var dataType = getDataTypeFromToken(type);
         symbolTable.setFunctionSymbolReturnType(ident.getValueString(), dataType, type.getStartPos());
 
-        //因为函数定义应该在同一层，所以我们这里不应该在加入一层了
-        var temp = expect(TokenType.L_BRACE);
-        var next = peek();
-        while (next.getTokenType() != TokenType.R_BRACE) {
-            analyseStatement();
-            next = peek();
-        }
-        expect(TokenType.R_BRACE);
-        --level;
-        symbolTable.popSymbolTable();
+        initLocalOffset();
+        analyseBlockStatement();
+        //设置函数中局部变量的数目
+        symbolTable.setFunctionLocalVariableSize(ident.getValueString(), localOffset, ident.getStartPos());
+
+        //退出时将工作函数目录设置回默认的
+        nowFunctionName = initFunctionName;
     }
 
     /**
      * function_param_list -> function_param (',' function_param)*
      */
     private void analyseFunctionParamList(String functionName) throws CompileError {
+        //参数的index
+        int paramIndex = 0;
         //参数
-        analyseFunctionParam(functionName);
+        analyseFunctionParam(functionName, paramIndex);
+        paramIndex++;
         var next = peek();
         while (next.getTokenType() == TokenType.COMMA) {
             expect(TokenType.COMMA);
-            analyseFunctionParam(functionName);
+            analyseFunctionParam(functionName, paramIndex);
+            paramIndex++;
             next = peek();
         }
     }
@@ -358,7 +323,7 @@ public final class Analyser {
      *
      * @throws CompileError
      */
-    private void analyseFunctionParam(String functionName) throws CompileError {
+    private void analyseFunctionParam(String functionName, int paramIndex) throws CompileError {
         var next = peek();
         if (next.getTokenType() == TokenType.CONST_KW) {
             //const
@@ -370,9 +335,8 @@ public final class Analyser {
             //ty
             var type = expectType();
             DataType dataType = getDataTypeFromToken(type);
-            //既要添加到符号表中，又要添加到函数符号的参数列表中
-            symbolTable.addConstantSymbol(dataType, ident.getValueString(), level, getNextOffset(), ident.getStartPos());
-            symbolTable.addFunctionParamSymbol(functionName, dataType, ident.getValueString(), level, getNextOffset(), ident.getStartPos());
+            //添加到函数的参数表中
+            symbolTable.addFunctionParamSymbol(functionName, dataType, ident.getValueString(), level, paramIndex, ident.getStartPos(), true);
 
         } else if (next.getTokenType() == TokenType.IDENT) {
             //IDENT
@@ -382,9 +346,7 @@ public final class Analyser {
             //ty
             var type = expectType();
             DataType dataType = getDataTypeFromToken(type);
-
-            symbolTable.addVariableSymbol(dataType, ident.getValueString(), level, getNextOffset(), ident.getStartPos(), true);
-            symbolTable.addFunctionParamSymbol(functionName, dataType, ident.getValueString(), level, getNextOffset(), ident.getStartPos());
+            symbolTable.addFunctionParamSymbol(functionName, dataType, ident.getValueString(), level, paramIndex, ident.getStartPos(), false);
         }
     }
 
@@ -418,6 +380,18 @@ public final class Analyser {
         var type = expectType();
         var dataType = getDataTypeFromToken(type);
 
+        //判断这是一个全局变量还是一个局部变量
+        int offset;
+        if (level == 0) {
+            offset = getNextGlobalOffset();
+        } else {
+            //如果是局部变量，还要判断一下是否和函数的参数重名
+            var param = symbolTable.findFunctionParamSymbolBySymbolName(nowFunctionName, ident.getValueString(), ident.getStartPos());
+            if (param != null) {
+                throw new AnalyzeError(ErrorCode.DuplicateWithTheParam, ident.getStartPos());
+            }
+            offset = getNextLocalOffset();
+        }
         var next = peek();
         if (next.getTokenType() == TokenType.ASSIGN) {
             expect(TokenType.ASSIGN);
@@ -427,9 +401,9 @@ public final class Analyser {
                 throw new AnalyzeError(ErrorCode.InvalidDataType, ident.getStartPos());
             }
             //加入符号表
-            symbolTable.addVariableSymbol(dataType, ident.getValueString(), level, getNextOffset(), ident.getStartPos(), true);
+            symbolTable.addVariableSymbol(dataType, ident.getValueString(), level, offset, ident.getStartPos(), true);
         } else {
-            symbolTable.addVariableSymbol(dataType, ident.getValueString(), level, getNextOffset(), ident.getStartPos(), false);
+            symbolTable.addVariableSymbol(dataType, ident.getValueString(), level, offset, ident.getStartPos(), false);
         }
         //;
         expect(TokenType.SEMICOLON);
@@ -447,8 +421,17 @@ public final class Analyser {
         expect(TokenType.COLON);
         //ty
         var type = expectType();
+        int offset;
+        if (level == 0) {
+            offset = getNextGlobalOffset();
+        } else {
+            var param = symbolTable.findFunctionParamSymbolBySymbolName(nowFunctionName, ident.getValueString(), ident.getStartPos());
+            if (param != null) {
+                throw new AnalyzeError(ErrorCode.DuplicateWithTheParam, ident.getStartPos());
+            }
+            offset = getNextLocalOffset();
+        }
         var dataType = getDataTypeFromToken(type);
-
         //=
         expect(TokenType.ASSIGN);
         //expr
@@ -456,7 +439,7 @@ public final class Analyser {
         //;
         expect(TokenType.SEMICOLON);
         //加入符号表
-        symbolTable.addConstantSymbol(dataType, ident.getValueString(), level, getNextOffset(), ident.getStartPos());
+        symbolTable.addConstantSymbol(dataType, ident.getValueString(), level, offset, ident.getStartPos());
     }
 
     /**
@@ -465,8 +448,10 @@ public final class Analyser {
      * @throws CompileError
      */
     private void analyseBlockStatement() throws CompileError {
+        //新增一级符号表
         ++level;
         symbolTable.pushSymbolTable();
+
         //{
         expect(TokenType.L_BRACE);
         var next = peek();
@@ -476,6 +461,8 @@ public final class Analyser {
         }
         //}
         expect(TokenType.R_BRACE);
+
+        //pop该符号表
         --level;
         symbolTable.popSymbolTable();
     }
@@ -676,10 +663,8 @@ public final class Analyser {
             back();
             if (token.getTokenType() == TokenType.ASSIGN) {
                 analyseAssignStatement();
-                dataType = DataType.VOID;
                 return dataType;
             }
-            //非赋值语句那就只能是加法表达式，因为赋值表达式和条件表达式都不能作为返回值
         }
 
         dataType = analyseAdditiveExpression();
@@ -705,15 +690,28 @@ public final class Analyser {
     private void analyseAssignStatement() throws CompileError {
         //IDENT
         var ident = expect(TokenType.IDENT);
-        var symbol = symbolTable.findSymbolBySymbolName(level, ident.getValueString(), ident.getStartPos());
+        Symbol symbol;
+        //先判断是不是参数
+        symbol = symbolTable.findFunctionParamSymbolBySymbolName(nowFunctionName, ident.getValueString(), ident.getStartPos());
+        if (symbol == null) {
+            //找不到在去本层和上层的符号表中寻找
+            symbol = symbolTable.findSymbolBySymbolName(level, ident.getValueString(), ident.getStartPos());
+        }
         if (symbol == null) {
             throw new AnalyzeError(ErrorCode.NotDeclared, ident.getStartPos());
         }
+
         if (symbol instanceof ConstantSymbol) {
             throw new AnalyzeError(ErrorCode.AssignToConstant, ident.getStartPos());
         }
         if (symbol instanceof FunctionSymbol) {
             throw new AnalyzeError(ErrorCode.AssignToFunction, ident.getStartPos());
+        }
+        if (symbol instanceof ParamSymbol) {
+            ParamSymbol paramSymbol = (ParamSymbol) symbol;
+            if (paramSymbol.isConstant()) {
+                throw new AnalyzeError(ErrorCode.AssignToConstantParam, ident.getStartPos());
+            }
         }
         var dataType = symbol.getDataType();
 
@@ -731,6 +729,10 @@ public final class Analyser {
         if (symbol instanceof VariableSymbol) {
             symbolTable.setVariableInitialized(level, ident.getValueString(), ident.getStartPos());
         }
+
+        //TODO：添加instructions
+
+
     }
 
     /**
@@ -845,43 +847,124 @@ public final class Analyser {
         DataType dataType;
         //IDENT
         var ident = expect(TokenType.IDENT);
-        //TODO:如果是库函数该如何处理?
-        Symbol symbol = symbolTable.findSymbolBySymbolName(level, ident.getValueString(), ident.getStartPos());
-        if (symbol == null) {
-            throw new AnalyzeError(ErrorCode.NotDeclared, ident.getStartPos());
-        }
-        if (!(symbol instanceof FunctionSymbol)) {
-            throw new AnalyzeError(ErrorCode.NotAFunction, ident.getStartPos());
-        }
-        var paramIndex = -1;
-        FunctionSymbol functionSymbol = (FunctionSymbol) symbol;
-        //获得函数的返回类型
-        dataType = functionSymbol.getReturnType();
+        var libFunc = LibFuncUtils.isLibFunction(ident);
+        if (libFunc != LibFunctions.NOTLIBFUN) {
+            switch (libFunc) {
+                //getint
+                case GETINT:{
+                    expect(TokenType.L_PAREN);
+                    expect(TokenType.R_PAREN);
 
-        //(
-        expect(TokenType.L_PAREN);
-        if (!check(TokenType.R_PAREN)) {
-            while (true) {
-                var tempDataType = analyseExpression();
-                ++paramIndex;
-                if (paramIndex < functionSymbol.getParamsSize()) {
-                    //参数类型不匹配
-                    if (functionSymbol.getParamDataTypeByIndex(paramIndex) != tempDataType) {
-                        throw new AnalyzeError(ErrorCode.FunctionParamDataTypeNotMap, ident.getStartPos());
-                    }
-                } else {
-                    throw new AnalyzeError(ErrorCode.FunctionParamsNotSuit, ident.getStartPos());
-                }
-                if (check(TokenType.R_PAREN)) {
+                    dataType = DataType.INT;
                     break;
                 }
-                expect(TokenType.COMMA);
+                //getdouble
+                case GETDOUBLE: {
+                    expect(TokenType.L_PAREN);
+                    expect(TokenType.R_PAREN);
+
+                    dataType = DataType.DOUBLE;
+                    break;
+                }
+                //getchar
+                case GETCHAR:{
+                    expect(TokenType.L_PAREN);
+                    expect(TokenType.R_PAREN);
+
+                    dataType = DataType.INT;
+                    break;
+                }
+                //putint
+                case PUTINT: {
+                    var l = expect(TokenType.L_PAREN);
+                    var tempDataType = analyseExpression();
+                    if (tempDataType != DataType.INT) {
+                        throw new AnalyzeError(ErrorCode.InvalidDataType, l.getStartPos());
+                    }
+                    expect(TokenType.R_PAREN);
+                    dataType = DataType.VOID;
+                    break;
+                }
+                //putdouble
+                case PUTDOUBLE: {
+                    var l = expect(TokenType.L_PAREN);
+                    var tempDataType = analyseExpression();
+                    if (tempDataType != DataType.DOUBLE) {
+                        throw new AnalyzeError(ErrorCode.InvalidDataType, l.getStartPos());
+                    }
+                    expect(TokenType.R_PAREN);
+                    dataType = DataType.VOID;
+                    break;
+                }
+                //putchar
+                case PUTCHAR: {
+                    var l = expect(TokenType.L_PAREN);
+                    var tempDataType = analyseExpression();
+                    if (tempDataType != DataType.INT) {
+                        throw new AnalyzeError(ErrorCode.InvalidDataType, l.getStartPos());
+                    }
+                    expect(TokenType.R_PAREN);
+                    dataType = DataType.VOID;
+                    break;
+                }
+                //putstr
+                case PUTSTR: {
+                    expect(TokenType.L_PAREN);
+                    var str = expect(TokenType.STRING_LITERAL);
+
+                    expect(TokenType.R_PAREN);
+                    dataType = DataType.VOID;
+                    break;
+                }
+                //putln
+                case PUTLN: {
+                    expect(TokenType.L_PAREN);
+                    expect(TokenType.R_PAREN);
+
+                    dataType = DataType.VOID;
+                    break;
+                }
+                default:
+                    throw new AnalyzeError(ErrorCode.NoSuchLibFunction, ident.getStartPos());
             }
-        }
-        //)
-        expect(TokenType.R_PAREN);
-        if (paramIndex != functionSymbol.getParamsSize() - 1) {
-            throw new AnalyzeError(ErrorCode.FunctionParamsNotSuit, ident.getStartPos());
+        } else {
+            Symbol symbol = symbolTable.findSymbolBySymbolName(level, ident.getValueString(), ident.getStartPos());
+            if (symbol == null) {
+                throw new AnalyzeError(ErrorCode.NotDeclared, ident.getStartPos());
+            }
+            if (!(symbol instanceof FunctionSymbol)) {
+                throw new AnalyzeError(ErrorCode.NotAFunction, ident.getStartPos());
+            }
+            var paramIndex = -1;
+            FunctionSymbol functionSymbol = (FunctionSymbol) symbol;
+            //获得函数的返回类型
+            dataType = functionSymbol.getReturnType();
+
+            //(
+            expect(TokenType.L_PAREN);
+            if (!check(TokenType.R_PAREN)) {
+                while (true) {
+                    var tempDataType = analyseExpression();
+                    ++paramIndex;
+                    if (paramIndex < functionSymbol.getParamsSize()) {
+                        //参数类型不匹配
+                        if (functionSymbol.getParamDataTypeByIndex(paramIndex) != tempDataType) {
+                            throw new AnalyzeError(ErrorCode.FunctionParamDataTypeNotMap, ident.getStartPos());
+                        }
+                    } else {
+                        throw new AnalyzeError(ErrorCode.FunctionParamsNotSuit, ident.getStartPos());
+                    }
+                    if (check(TokenType.R_PAREN)) {
+                        break;
+                    }
+                    expect(TokenType.COMMA);
+                }
+            }
+            //)
+            expect(TokenType.R_PAREN);
+            if (paramIndex != functionSymbol.getParamsSize() - 1) {
+                throw new AnalyzeError(ErrorCode.FunctionParamsNotSuit, ident.getStartPos());
+            }
         }
         return dataType;
     }
@@ -893,7 +976,19 @@ public final class Analyser {
         DataType dataType;
         //IDENT
         var ident = expect(TokenType.IDENT);
-        Symbol symbol = symbolTable.findSymbolBySymbolName(level, ident.getValueString(), ident.getStartPos());
+        Symbol symbol;
+        //先判断是不是函数的参数
+        if (level != 0) {
+            symbol = symbolTable.findFunctionParamSymbolBySymbolName(nowFunctionName, ident.getValueString(), ident.getStartPos());
+            if (symbol == null) {
+                symbol = symbolTable.findSymbolBySymbolName(level, ident.getValueString(), ident.getStartPos());
+            }
+        }
+        //全局
+        else {
+            symbol = symbolTable.findSymbolBySymbolName(level, ident.getValueString(), ident.getStartPos());
+        }
+
         if (symbol == null) {
             throw new AnalyzeError(ErrorCode.NotDeclared, ident.getStartPos());
         }
