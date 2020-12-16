@@ -21,6 +21,7 @@ public enum ErrorCode {
     InvalidVariableDeclaration,
     IncompleteExpression,
     NotDeclared,
+    FunctionNotDeclared,
     AssignToConstant,
     AssignToFunction,
     DuplicateDeclaration,

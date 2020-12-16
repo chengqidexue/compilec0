@@ -1,7 +1,6 @@
 package com.buaa.compilec0.tokenizer;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 

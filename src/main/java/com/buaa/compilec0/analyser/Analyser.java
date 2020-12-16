@@ -1,10 +1,7 @@
 package com.buaa.compilec0.analyser;
 
-import ch.qos.logback.classic.layout.TTLLLayout;
 import com.buaa.compilec0.error.*;
 import com.buaa.compilec0.instruction.Instruction;
-import com.buaa.compilec0.library.LibFuncUtils;
-import com.buaa.compilec0.library.LibFunctions;
 import com.buaa.compilec0.symbol.*;
 import com.buaa.compilec0.tokenizer.Token;
 import com.buaa.compilec0.tokenizer.TokenType;
@@ -12,7 +9,6 @@ import com.buaa.compilec0.tokenizer.Tokenizer;
 import com.buaa.compilec0.util.Pos;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public final class Analyser {
@@ -65,6 +61,63 @@ public final class Analyser {
         /**
          * TODO:将所有的库函数加入符号表
          */
+        Pos defaultPos = new Pos(0, 0);
+        String defaultParamName = "defaultName";
+        /**
+         * 读入一个有符号整数
+         * GETINT,
+         */
+        symbolTable.addFunctionSymbol(DataType.VOID, "getint", level, getNextOffset(), defaultPos);
+        symbolTable.setFunctionSymbolReturnType("getint", DataType.INT, defaultPos);
+        /**
+         * 读入一个浮点数
+         * GETDOUBLE,
+         */
+        symbolTable.addFunctionSymbol(DataType.VOID, "getdouble", level, getNextOffset(), defaultPos);
+        symbolTable.setFunctionSymbolReturnType("getdouble", DataType.DOUBLE, defaultPos);
+        /**
+         * 读入一个字符
+         * GETCHAR,
+         */
+        symbolTable.addFunctionSymbol(DataType.VOID, "getchar", level, getNextOffset(), defaultPos);
+        symbolTable.setFunctionSymbolReturnType("getchar", DataType.CHAR, defaultPos);
+        /**
+         * 输出一个整数
+         * PUTINT,
+         */
+        symbolTable.addFunctionSymbol(DataType.VOID, "putint", level, getNextOffset(), defaultPos);
+        symbolTable.setFunctionSymbolReturnType("putint", DataType.VOID, defaultPos);
+        symbolTable.addFunctionParamSymbol("putint", DataType.INT, defaultParamName, level, getNextOffset(), defaultPos);
+        /**
+         * 输出一个浮点数
+         * PUTDOUBLE,
+         */
+        symbolTable.addFunctionSymbol(DataType.VOID, "putdouble", level, getNextOffset(), defaultPos);
+        symbolTable.setFunctionSymbolReturnType("putdouble", DataType.VOID, defaultPos);
+        symbolTable.addFunctionParamSymbol("putdouble", DataType.DOUBLE, defaultParamName, level, getNextOffset(), defaultPos);
+        /**
+         * 输出一个字符
+         * PUTCHAR,
+         */
+        symbolTable.addFunctionSymbol(DataType.VOID, "putchar", level, getNextOffset(), defaultPos);
+        symbolTable.setFunctionSymbolReturnType("putchar", DataType.VOID, defaultPos);
+        symbolTable.addFunctionParamSymbol("putchar", DataType.INT, defaultParamName, level, getNextOffset(), defaultPos);
+
+        /**
+         * 将编号为这个整数的全局常量看作字符串输出
+         *  PUTSTR,
+         */
+        symbolTable.addFunctionSymbol(DataType.VOID, "putstr", level, getNextOffset(), defaultPos);
+        symbolTable.setFunctionSymbolReturnType("putstr", DataType.VOID, defaultPos);
+        symbolTable.addFunctionParamSymbol("putstr", DataType.INT, defaultParamName, level, getNextOffset(), defaultPos);
+
+        /**
+         * 输出一个换行
+         * PUTLN,
+         */
+        symbolTable.addFunctionSymbol(DataType.VOID, "putln", level, getNextOffset(), defaultPos);
+        symbolTable.setFunctionSymbolReturnType("putln", DataType.VOID, defaultPos);
+
         analyseProgram();
         return instructions;
     }
@@ -91,7 +144,7 @@ public final class Analyser {
      */
     private Token peek() throws TokenizeError {
         if (peekedToken == null) {
-            peekedToken = allTokens.get(tokenIndex+1);
+            peekedToken = allTokens.get(tokenIndex + 1);
         }
         return peekedToken;
     }
@@ -169,6 +222,7 @@ public final class Analyser {
     /**
      * 如果下一个 token 的类型是数据类型(int、void、double), 则前进一个 token 并返回，否则抛出异常
      * int double void
+     *
      * @return 这个  token
      * @throws CompileError 类型不匹配
      */
@@ -190,6 +244,7 @@ public final class Analyser {
 
     /**
      * 把token的类型转化为数据类型
+     *
      * @param token
      * @return
      * @throws CompileError
@@ -208,6 +263,7 @@ public final class Analyser {
 
     /**
      * 获取下一个变量的栈偏移
+     *
      * @return
      */
     private int getNextOffset() {
@@ -231,6 +287,7 @@ public final class Analyser {
             } else {
                 throw new AnalyzeError(ErrorCode.InvalidInput, nextPeekToken.getStartPos());
             }
+            nextPeekToken = peek();
         }
     }
 
@@ -273,7 +330,7 @@ public final class Analyser {
         //因为函数定义应该在同一层，所以我们这里不应该在加入一层了
         var temp = expect(TokenType.L_BRACE);
         var next = peek();
-        while(next.getTokenType() != TokenType.R_BRACE) {
+        while (next.getTokenType() != TokenType.R_BRACE) {
             analyseStatement();
             next = peek();
         }
@@ -285,7 +342,7 @@ public final class Analyser {
     /**
      * function_param_list -> function_param (',' function_param)*
      */
-    private void analyseFunctionParamList(String functionName) throws CompileError{
+    private void analyseFunctionParamList(String functionName) throws CompileError {
         //参数
         analyseFunctionParam(functionName);
         var next = peek();
@@ -298,9 +355,10 @@ public final class Analyser {
 
     /**
      * function_param -> 'const'? IDENT ':' ty
+     *
      * @throws CompileError
      */
-    private void analyseFunctionParam(String functionName) throws CompileError{
+    private void analyseFunctionParam(String functionName) throws CompileError {
         var next = peek();
         if (next.getTokenType() == TokenType.CONST_KW) {
             //const
@@ -316,7 +374,7 @@ public final class Analyser {
             symbolTable.addConstantSymbol(dataType, ident.getValueString(), level, getNextOffset(), ident.getStartPos());
             symbolTable.addFunctionParamSymbol(functionName, dataType, ident.getValueString(), level, getNextOffset(), ident.getStartPos());
 
-        } else if (next.getTokenType() == TokenType.IDENT){
+        } else if (next.getTokenType() == TokenType.IDENT) {
             //IDENT
             var ident = expect(TokenType.IDENT);
             //:
@@ -363,18 +421,22 @@ public final class Analyser {
         var next = peek();
         if (next.getTokenType() == TokenType.ASSIGN) {
             expect(TokenType.ASSIGN);
-            analyseExpression();
+            var tempDataType = analyseExpression();
 
+            if (tempDataType != dataType) {
+                throw new AnalyzeError(ErrorCode.InvalidDataType, ident.getStartPos());
+            }
             //加入符号表
             symbolTable.addVariableSymbol(dataType, ident.getValueString(), level, getNextOffset(), ident.getStartPos(), true);
+        } else {
+            symbolTable.addVariableSymbol(dataType, ident.getValueString(), level, getNextOffset(), ident.getStartPos(), false);
         }
         //;
         expect(TokenType.SEMICOLON);
-        symbolTable.addVariableSymbol(dataType, ident.getValueString(), level, getNextOffset(), ident.getStartPos(), false);
     }
 
     /**
-      * const_decl_stmt -> 'const' IDENT ':' ty '=' expr ';'
+     * const_decl_stmt -> 'const' IDENT ':' ty '=' expr ';'
      */
     private void analyseConstDeclareStatement() throws CompileError {
         //const
@@ -399,15 +461,16 @@ public final class Analyser {
 
     /**
      * block_stmt -> '{' stmt* '}'
+     *
      * @throws CompileError
      */
-    private void analyseBlockStatement() throws CompileError{
+    private void analyseBlockStatement() throws CompileError {
         ++level;
         symbolTable.pushSymbolTable();
         //{
         expect(TokenType.L_BRACE);
         var next = peek();
-        while(next.getTokenType() != TokenType.R_BRACE) {
+        while (next.getTokenType() != TokenType.R_BRACE) {
             analyseStatement();
             next = peek();
         }
@@ -420,25 +483,25 @@ public final class Analyser {
     /**
      * 语句
      * stmt ->
-     *       expr_stmt
-     *     | decl_stmt
-     *     | if_stmt
-     *     | while_stmt
-     *     | break_stmt
-     *     | continue_stmt
-     *     | return_stmt
-     *     | block_stmt
-     *     | empty_stmt
+     * expr_stmt
+     * | decl_stmt
+     * | if_stmt
+     * | while_stmt
+     * | break_stmt
+     * | continue_stmt
+     * | return_stmt
+     * | block_stmt
+     * | empty_stmt
+     *
      * @throws CompileError
      */
     private void analyseStatement() throws CompileError {
         var next = peek();
-        var tokenType  = next.getTokenType();
+        var tokenType = next.getTokenType();
         //decl_stmt
         if (tokenType == TokenType.LET_KW) {
             analyseLetDeclareStatement();
-        }
-        else if (tokenType == TokenType.CONST_KW) {
+        } else if (tokenType == TokenType.CONST_KW) {
             analyseConstDeclareStatement();
         }
         //if
@@ -478,24 +541,24 @@ public final class Analyser {
     /**
      * empty_stmt -> ';'
      */
-    private void analyseEmptyStatement() throws CompileError{
+    private void analyseEmptyStatement() throws CompileError {
         //;
         expect(TokenType.SEMICOLON);
     }
 
     /**
      * return_stmt -> 'return' expr? ';'
+     *
      * @throws CompileError
      */
-    private void analyseReturnStatement() throws CompileError{
+    private void analyseReturnStatement() throws CompileError {
         //return
         expect(TokenType.RETURN_KW);
         var next = peek();
         if (next.getTokenType() == TokenType.SEMICOLON) {
             //;
             expect(TokenType.SEMICOLON);
-        }
-        else {
+        } else {
             //expr
             analyseExpression();
             //;
@@ -505,9 +568,10 @@ public final class Analyser {
 
     /**
      * continue_stmt -> 'continue' ';'
+     *
      * @throws CompileError
      */
-    private void analyseContinueStatement() throws CompileError{
+    private void analyseContinueStatement() throws CompileError {
         //continue
         expect(TokenType.CONTINUE_KW);
         //;
@@ -516,9 +580,10 @@ public final class Analyser {
 
     /**
      * break_stmt -> 'break' ';'
+     *
      * @throws CompileError
      */
-    private void analyseBreakStatement() throws CompileError{
+    private void analyseBreakStatement() throws CompileError {
         //break
         expect(TokenType.BREAK_KW);
         //;
@@ -527,9 +592,10 @@ public final class Analyser {
 
     /**
      * while_stmt -> 'while' expr block_stmt
+     *
      * @throws CompileError
      */
-    private void analyseWhileStatement() throws CompileError{
+    private void analyseWhileStatement() throws CompileError {
         //while
         expect(TokenType.WHILE_KW);
         //expr
@@ -540,9 +606,10 @@ public final class Analyser {
 
     /**
      * if_stmt -> 'if' expr block_stmt ('else' 'if' expr block_stmt)* ('else' block_stmt)?
+     *
      * @throws CompileError
      */
-    private void analyseIfStatement() throws CompileError{
+    private void analyseIfStatement() throws CompileError {
         //if
         expect(TokenType.IF_KW);
         //expr
@@ -572,7 +639,7 @@ public final class Analyser {
     /**
      * expr_stmt -> expr ';'
      */
-    private void analyseExpressionStatement() throws CompileError{
+    private void analyseExpressionStatement() throws CompileError {
         //expr
         analyseExpression();
         //;
@@ -582,23 +649,24 @@ public final class Analyser {
     /**
      * // # 表达式
      * expr ->
-     *       operator_expr
-     *     | negate_expr
-     *     | assign_expr
-     *     | as_expr
-     *     | call_expr
-     *     | literal_expr
-     *     | ident_expr
-     *     | group_expr
-     * @throws CompileError
+     * operator_expr
+     * | negate_expr
+     * | assign_expr
+     * | as_expr
+     * | call_expr
+     * | literal_expr
+     * | ident_expr
+     * | group_expr
+     *
      * @return Datatype 表达式计算得到的数据类型
      * 为了修改左递归，我们将expression修改一下
      * 将赋值语句从Expression中移除
      * assign_expr -> IDENT '=' additive_expr
      * expr -> assign_expr
-     *        |additive_expr ('=='|'!='|'>'|'>='|'<'|'<=' additive_expr)?
+     * |additive_expr ('=='|'!='|'>'|'>='|'<'|'<=' additive_expr)?
+     * @throws CompileError
      */
-    private DataType analyseExpression() throws CompileError{
+    private DataType analyseExpression() throws CompileError {
         DataType dataType = DataType.VOID;
         var token = peek();
         if (token.getTokenType() == TokenType.IDENT) {
@@ -609,30 +677,32 @@ public final class Analyser {
             if (token.getTokenType() == TokenType.ASSIGN) {
                 analyseAssignStatement();
                 dataType = DataType.VOID;
+                return dataType;
             }
             //非赋值语句那就只能是加法表达式，因为赋值表达式和条件表达式都不能作为返回值
-            else {
-                dataType = analyseAdditiveExpression();
-            }
         }
-        else {
-            dataType = analyseAdditiveExpression();
-            token = peek();
-            if (token.getTokenType() == TokenType.EQ || token.getTokenType() == TokenType.NEQ
-             || token.getTokenType() == TokenType.GT || token.getTokenType() == TokenType.GE
-             || token.getTokenType() == TokenType.LT || token.getTokenType() == TokenType.LE) {
-                analyseAdditiveExpression();
-                dataType = DataType.BOOL;
+
+        dataType = analyseAdditiveExpression();
+        token = peek();
+        if (token.getTokenType() == TokenType.EQ || token.getTokenType() == TokenType.NEQ
+                || token.getTokenType() == TokenType.GT || token.getTokenType() == TokenType.GE
+                || token.getTokenType() == TokenType.LT || token.getTokenType() == TokenType.LE) {
+            var boolSymbol = next();
+            var tempDataType = analyseAdditiveExpression();
+            if (tempDataType != dataType) {
+                throw new AnalyzeError(ErrorCode.InvalidDataType, token.getStartPos());
             }
+            dataType = DataType.BOOL;
         }
         return dataType;
     }
 
     /**
      * assign_expr -> IDENT '=' additive_expr
-      * @throws CompileError
+     *
+     * @throws CompileError
      */
-    private void analyseAssignStatement() throws CompileError{
+    private void analyseAssignStatement() throws CompileError {
         //IDENT
         var ident = expect(TokenType.IDENT);
         var symbol = symbolTable.findSymbolBySymbolName(level, ident.getValueString(), ident.getStartPos());
@@ -665,9 +735,10 @@ public final class Analyser {
 
     /**
      * additive_expr -> mult_expr {'+'|'-' mult_expr}
+     *
      * @throws CompileError
      */
-    private DataType analyseAdditiveExpression() throws CompileError{
+    private DataType analyseAdditiveExpression() throws CompileError {
         DataType dataType = analyseMultExpression();
         while ((check(TokenType.PLUS)) || (check(TokenType.MINUS))) {
             var nameToken = next();
@@ -682,9 +753,10 @@ public final class Analyser {
 
     /**
      * mult_expr -> as_expr {'*'|'/' as_expr}
+     *
      * @throws CompileError
      */
-    private DataType analyseMultExpression() throws CompileError{
+    private DataType analyseMultExpression() throws CompileError {
         DataType dataType = analyseAsExpression();
         while (check(TokenType.MUL) || check(TokenType.DIV)) {
             var nameToken = next();
@@ -701,7 +773,7 @@ public final class Analyser {
      * 类型转换表达式
      * as_expr -> single_expr {'as' ty}
      */
-    private DataType analyseAsExpression() throws CompileError{
+    private DataType analyseAsExpression() throws CompileError {
         var dataType = analyseSingleExpression();
         while (check(TokenType.AS_KW)) {
             //as
@@ -718,15 +790,14 @@ public final class Analyser {
      * 单目表达式
      * single_expr -> {'-'} primary_expr
      */
-    private DataType analyseSingleExpression() throws CompileError{
+    private DataType analyseSingleExpression() throws CompileError {
         DataType dataType;
         var token = peek();
         if (token.getTokenType() == TokenType.MINUS) {
             expect(TokenType.MINUS);
             dataType = analyseSingleExpression();
-        }
-        else {
-           dataType = analysePrimaryExpression();
+        } else {
+            dataType = analysePrimaryExpression();
         }
         return dataType;
     }
@@ -734,11 +805,11 @@ public final class Analyser {
     /**
      * 最小表达式
      * primary_expr -> call_expr
-     *               | literal_expr
-     *               | ident_expr
-     *               | group_expr
+     * | literal_expr
+     * | ident_expr
+     * | group_expr
      */
-    private DataType analysePrimaryExpression() throws CompileError{
+    private DataType analysePrimaryExpression() throws CompileError {
         DataType dataType;
         var token = peek();
         if (token.getTokenType() == TokenType.IDENT) {
@@ -747,18 +818,15 @@ public final class Analyser {
             back();
             if (token.getTokenType() == TokenType.L_PAREN) {
                 dataType = analyseCallExpression();
-            }
-            else {
+            } else {
                 dataType = analyseIdentExpression();
             }
-        }
-        else if (token.getTokenType() == TokenType.UINT_LITERAL
-               ||token.getTokenType() == TokenType.DOUBLE_LITERAL
-               ||token.getTokenType() == TokenType.STRING_LITERAL
-               ||token.getTokenType() == TokenType.CHAR_LITERAL) {
+        } else if (token.getTokenType() == TokenType.UINT_LITERAL
+                || token.getTokenType() == TokenType.DOUBLE_LITERAL
+                || token.getTokenType() == TokenType.STRING_LITERAL
+                || token.getTokenType() == TokenType.CHAR_LITERAL) {
             dataType = analyseLiteralExpression();
-        }
-        else if (token.getTokenType() == TokenType.L_PAREN) {
+        } else if (token.getTokenType() == TokenType.L_PAREN) {
             expect(TokenType.L_PAREN);
             dataType = analyseExpression();
             expect(TokenType.R_PAREN);
@@ -773,7 +841,7 @@ public final class Analyser {
      * call_param_list -> expr (',' expr)*
      * call_expr -> IDENT '(' call_param_list? ')'
      */
-    private DataType analyseCallExpression() throws CompileError{
+    private DataType analyseCallExpression() throws CompileError {
         DataType dataType;
         //IDENT
         var ident = expect(TokenType.IDENT);
@@ -785,7 +853,7 @@ public final class Analyser {
         if (!(symbol instanceof FunctionSymbol)) {
             throw new AnalyzeError(ErrorCode.NotAFunction, ident.getStartPos());
         }
-        var paramIndex = 0;
+        var paramIndex = -1;
         FunctionSymbol functionSymbol = (FunctionSymbol) symbol;
         //获得函数的返回类型
         dataType = functionSymbol.getReturnType();
@@ -795,6 +863,7 @@ public final class Analyser {
         if (!check(TokenType.R_PAREN)) {
             while (true) {
                 var tempDataType = analyseExpression();
+                ++paramIndex;
                 if (paramIndex < functionSymbol.getParamsSize()) {
                     //参数类型不匹配
                     if (functionSymbol.getParamDataTypeByIndex(paramIndex) != tempDataType) {
@@ -806,13 +875,12 @@ public final class Analyser {
                 if (check(TokenType.R_PAREN)) {
                     break;
                 }
-                paramIndex++;
                 expect(TokenType.COMMA);
             }
         }
         //)
         expect(TokenType.R_PAREN);
-        if (paramIndex != functionSymbol.getParamsSize()-1) {
+        if (paramIndex != functionSymbol.getParamsSize() - 1) {
             throw new AnalyzeError(ErrorCode.FunctionParamsNotSuit, ident.getStartPos());
         }
         return dataType;
@@ -821,7 +889,7 @@ public final class Analyser {
     /**
      * ident_expr -> IDENT
      */
-    private DataType analyseIdentExpression() throws CompileError{
+    private DataType analyseIdentExpression() throws CompileError {
         DataType dataType;
         //IDENT
         var ident = expect(TokenType.IDENT);
@@ -842,25 +910,22 @@ public final class Analyser {
     /**
      * literal_expr -> UINT_LITERAL | DOUBLE_LITERAL | STRING_LITERAL | CHAR_LITERAL
      */
-    private DataType analyseLiteralExpression() throws CompileError{
+    private DataType analyseLiteralExpression() throws CompileError {
         DataType dataType;
         var token = next();
         if (token.getTokenType() == TokenType.UINT_LITERAL) {
             //TODO
             dataType = DataType.INT;
-        }
-        else if (token.getTokenType() == TokenType.DOUBLE_LITERAL) {
+        } else if (token.getTokenType() == TokenType.DOUBLE_LITERAL) {
             //TODO
             dataType = DataType.DOUBLE;
-        }
-        else if (token.getTokenType() == TokenType.STRING_LITERAL) {
+        } else if (token.getTokenType() == TokenType.STRING_LITERAL) {
             //TODO
             dataType = DataType.STRING;
-        }else if (token.getTokenType() == TokenType.CHAR_LITERAL) {
+        } else if (token.getTokenType() == TokenType.CHAR_LITERAL) {
             //TODO
             dataType = DataType.CHAR;
-        }
-        else {
+        } else {
             throw new AnalyzeError(ErrorCode.InvalidInput, token.getStartPos());
         }
         return dataType;

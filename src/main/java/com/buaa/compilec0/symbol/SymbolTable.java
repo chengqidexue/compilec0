@@ -99,6 +99,7 @@ public class SymbolTable {
     public void addVariableSymbol(DataType dataType, String symbolName, int level,
                                          int offset, Pos startPos, boolean initialized) throws CompileError {
         if (isSymbolExistedInSameLevel(level, symbolName, startPos)) {
+
             throw new AnalyzeError(ErrorCode.DuplicateDeclaration, startPos);
         }
         else {
@@ -182,7 +183,7 @@ public class SymbolTable {
         var table = symbolTables.get(0);
         var functionSymbol = table.get(functionName);
         if (functionSymbol == null) {
-            throw new AnalyzeError(ErrorCode.NotDeclared, startPos);
+            throw new AnalyzeError(ErrorCode.FunctionNotDeclared, startPos);
         }
         FunctionSymbol _functionSymbol;
         if (functionSymbol instanceof FunctionSymbol) {
