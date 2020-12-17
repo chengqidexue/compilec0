@@ -1,3 +1,9 @@
+fn sum(a:int, b:int) -> int{
+    a;
+    111111;
+    return a+b;
+}
+
 fn main() -> void {
-    let a:int;
+  putint(sum(1, 2));
 }

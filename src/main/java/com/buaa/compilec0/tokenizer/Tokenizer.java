@@ -3,6 +3,7 @@ package com.buaa.compilec0.tokenizer;
 import com.buaa.compilec0.error.ErrorCode;
 import com.buaa.compilec0.error.TokenizeError;
 import com.buaa.compilec0.util.Pos;
+import org.springframework.expression.spel.SpelEvaluationException;
 
 public class Tokenizer {
 
@@ -30,18 +31,6 @@ public class Tokenizer {
             return new Token(TokenType.EOF, "EOF", it.currentPos(), it.currentPos());
         }
         char peek = it.peekChar();
-        if (peek == '/') {
-            while (true) {
-                peek = it.peekChar();
-                if (peek == '\n') {
-                    break;
-                } else {
-                    it.nextChar();
-                }
-            }
-            return nextToken();
-        }
-
         if (Character.isDigit(peek)) {
             //分析整数
             return lexUInt();
@@ -53,7 +42,14 @@ public class Tokenizer {
             return lexStringLiteral();
         } else {
             //分析运算符
-            return lexOperatorOrUnknown();
+            var token = lexOperatorOrUnknown();
+            if (token.getTokenType() == TokenType.COMMENT) {
+                var line = token.getStartPos().row;
+                while (token.getStartPos().row == line) {
+                    token = nextToken();
+                }
+            }
+            return token;
         }
     }
 

@@ -76,7 +76,8 @@ public final class Analyser {
      * 用于处理continue, break
      */
     private boolean isInWhile = false;
-    private int startWhileIndex;
+    private int impossibleWhileStart = 100000000;
+    private int startWhileIndex = impossibleWhileStart;
     private int impossibleBrNum = 100000000;
 
     /**
@@ -351,9 +352,16 @@ public final class Analyser {
         nowInstructionFunction.setLocalVariableSize(localOffset);
         symbolTable.setFunctionLocalVariableSize(ident.getValueString(), localOffset, ident.getStartPos());
 
-        if (nowInstructionFunction.getInstructions().size() == 0) {
-            nowInstructionFunction.addInstruction(new Instruction(nowInstructionFunctionIndex++, Operation.ret));
+        //判断函数是否退出
+        var flag = false;
+        for (Instruction instruction : nowInstructionFunction.getInstructions()) {
+            if (instruction.getOpt() == Operation.ret) {
+                flag = true;
+                break;
+            }
         }
+        if (!flag)
+            nowInstructionFunction.addInstruction(new Instruction(nowInstructionFunctionIndex++, Operation.ret));
         //退出时将工作函数目录设置回默认的并添加到functions
         assembler.addFunction(nowInstructionFunction);
         nowFunctionName = initFunctionName;
@@ -475,7 +483,7 @@ public final class Analyser {
                 nowInstructionFunction.addInstruction(new Instruction(nowInstructionFunctionIndex++, Operation.store64));
             }
         } else {
-            symbolTable.addVariableSymbol(dataType, ident.getValueString(), level, offset, ident.getStartPos(), false);
+            symbolTable.addVariableSymbol(dataType, ident.getValueString(), level, offset, ident.getStartPos(), true);
         }
         //;
         expect(TokenType.SEMICOLON);
@@ -681,6 +689,7 @@ public final class Analyser {
      * @throws CompileError
      */
     private void analyseWhileStatement() throws CompileError {
+        var oldStartWhileIndex = startWhileIndex;
         startWhileIndex = nowInstructionFunctionIndex;
         isInWhile = true;
         //while
@@ -715,10 +724,11 @@ public final class Analyser {
         for (int i = 0; i < nowInstructionFunction.getInstructions().size(); i++) {
             var temp = nowInstructionFunction.getInstructions().get(i);
             if ((int) temp.getX() == impossibleBrNum) {
-                num = nowInstructionFunctionIndex - i;
+                num = nowInstructionFunctionIndex - i - 1;
                 temp.setX(num);
             }
         }
+        startWhileIndex = oldStartWhileIndex;
     }
 
     /**
@@ -749,6 +759,7 @@ public final class Analyser {
         num = 0;
         int jumpAllIfIndex = nowInstructionFunctionIndex++;               //12
         Instruction brEndIfInstruction = new Instruction(jumpAllIfIndex, Operation.br, num);
+        nowInstructionFunction.addInstruction(brEndIfInstruction);
 
         //给跳过block的语句设置好偏移
         var temp = nowInstructionFunction.getInstructions().get(jumpBlockIndex);
@@ -908,43 +919,50 @@ public final class Analyser {
             }
         }
         //在栈顶放上地址，根据ident的类型的不同，决定去哪里找
-        if (symbol instanceof VariableSymbol) {
+        //添加instructions
+        Function beAddedFunction;
+        int instructionIndex;
+        Operation operation;
+        int offset = symbol.getOffset();
+        if (level == 0) {
+            //全局中引用
+            beAddedFunction = assembler.startFunction;
+            instructionIndex = startFunctionInstructionIndex++;
+            operation = Operation.globa;
+        } else {
+            //局部中引用
+            beAddedFunction = nowInstructionFunction;
+            instructionIndex = nowInstructionFunctionIndex++;
             if (symbol.getLevel() == 0) {
-                //全局变量
-                nowInstructionFunction.addInstruction(new Instruction(startFunctionInstructionIndex++, Operation.globa, symbol.getOffset()));
+                //引用全局量
+                operation = Operation.globa;
+            } else if (symbol instanceof ParamSymbol) {
+                //引用参数
+                operation = Operation.arga;
+                if (nowInstructionFunction.getReturnType() != DataType.VOID) {
+                    offset++;
+                }
             } else {
-                //局部变量
-                nowInstructionFunction.addInstruction(new Instruction(nowInstructionFunctionIndex++, Operation.loca, symbol.getOffset()));
+                //引用局部变量
+                operation = Operation.loca;
             }
-        } else if (symbol instanceof ParamSymbol) {
-            ParamSymbol paramSymbol = (ParamSymbol) symbol;
-            //查看有没有返回值
-            //默认没有返回值
-            var returnFlag = 0;
-            if (nowInstructionFunction.getReturnType() != DataType.VOID) {
-                returnFlag = 1;
-            }
-            //判断是第几个参数
-            var paramIndex = paramSymbol.getOffset();
-            nowInstructionFunction.addInstruction(new Instruction(nowInstructionFunctionIndex++, Operation.arga, paramIndex + returnFlag));
         }
+        beAddedFunction.addInstruction(new Instruction(instructionIndex, operation, offset));
         var dataType = symbol.getDataType();
         //=
         expect(TokenType.ASSIGN);
         //additive_expr
         var tempDataType = analyseAdditiveExpression();
-
         //赋值类型不匹配
         if (dataType != tempDataType) {
             throw new AnalyzeError(ErrorCode.InvalidDataType, ident.getStartPos());
         }
-
         //如果是普通变量，要将initialize赋值成true
         if (symbol instanceof VariableSymbol) {
             symbolTable.setVariableInitialized(level, ident.getValueString(), ident.getStartPos());
         }
-
-        nowInstructionFunction.addInstruction(new Instruction(nowInstructionFunctionIndex++, Operation.store64));
+        instructionIndex = (level == 0) ? startFunctionInstructionIndex++ : nowInstructionFunctionIndex++;
+        beAddedFunction.addInstruction(new Instruction(instructionIndex, Operation.store64));
     }
 
     /**
@@ -1376,6 +1394,7 @@ public final class Analyser {
             }
         }
         beAddedFunction.addInstruction(new Instruction(instructionIndex, operation, offset));
+        instructionIndex = (level == 0) ? startFunctionInstructionIndex++ : nowInstructionFunctionIndex++;
         beAddedFunction.addInstruction(new Instruction(instructionIndex, Operation.load64));
         return dataType;
     }

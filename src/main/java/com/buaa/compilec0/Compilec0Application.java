@@ -1,6 +1,7 @@
 package com.buaa.compilec0;
 
 import com.buaa.compilec0.analyser.Analyser;
+import com.buaa.compilec0.assembler.BinaryCode;
 import com.buaa.compilec0.error.AnalyzeError;
 import com.buaa.compilec0.error.TokenizeError;
 import com.buaa.compilec0.tokenizer.StringIter;
@@ -16,11 +17,11 @@ public class Compilec0Application {
     public static void main(String[] args) {
 
         System.out.println(args.length);
-//        var inputFileName = args[0];
-//        var outputFileName = args[2];
-
-        var inputFileName = "input.c0";
-        var outputFileName = "output.o0";
+        var inputFileName = args[0];
+        var outputFileName = args[2];
+//
+//        var inputFileName = "input.c0";
+//        var outputFileName = "output.o0";
 
         printInputFile(inputFileName);
         InputStream input;
@@ -37,20 +38,6 @@ public class Compilec0Application {
             }
         }
 
-        PrintStream output;
-        if (outputFileName.equals("-")) {
-            output = System.out;
-        } else {
-            try {
-                output = new PrintStream(new FileOutputStream(outputFileName));
-            } catch (FileNotFoundException e) {
-                System.err.println("Cannot open output file.");
-                e.printStackTrace();
-                System.exit(2);
-                return;
-            }
-        }
-
         Scanner scanner;
         scanner = new Scanner(input);
         var iter = new StringIter(scanner);
@@ -58,7 +45,11 @@ public class Compilec0Application {
 
         try {
             var analyser = new Analyser(tokenizer);
-            analyser.analyse();
+            var assembler =  analyser.analyse();
+//            System.out.println(assembler);
+            File output = new File("output.o0");
+            BinaryCode binaryCode = new BinaryCode(assembler);
+            binaryCode.writeToOutput(output);
         } catch (Exception e) {
             System.out.println("编译错误");
             e.printStackTrace();

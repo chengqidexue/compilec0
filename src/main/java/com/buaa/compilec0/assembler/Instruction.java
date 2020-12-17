@@ -7,11 +7,13 @@ public class Instruction {
     private int defaultOptionNumber = -111111111;
 
     public Instruction(int index, Operation opt) {
+        this.index = index;
         this.opt = opt;
         this.x = defaultOptionNumber;
     }
 
     public Instruction(int index, Operation opt, Object x) {
+        this.index = index;
         this.opt = opt;
         this.x = x;
     }
