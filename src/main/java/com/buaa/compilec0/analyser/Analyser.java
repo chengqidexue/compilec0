@@ -351,6 +351,9 @@ public final class Analyser {
         nowInstructionFunction.setLocalVariableSize(localOffset);
         symbolTable.setFunctionLocalVariableSize(ident.getValueString(), localOffset, ident.getStartPos());
 
+        if (nowInstructionFunction.getInstructions().size() == 0) {
+            nowInstructionFunction.addInstruction(new Instruction(nowInstructionFunctionIndex++, Operation.ret));
+        }
         //退出时将工作函数目录设置回默认的并添加到functions
         assembler.addFunction(nowInstructionFunction);
         nowFunctionName = initFunctionName;

@@ -2,7 +2,6 @@ package com.buaa.compilec0.assembler;
 
 import com.buaa.compilec0.symbol.DataType;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 
@@ -31,8 +30,9 @@ public class BinaryCode {
 
     private void writeGlobalVariableList() throws Exception {
         //长度
-        int globalCount = assembler.globals.size() + 1;
-        fileOutputStream.write(intTo4Byte(globalCount));
+        long globalCount = assembler.globals.size() + 1;
+        System.out.println(globalCount);
+        fileOutputStream.write(longTo4Byte(globalCount));
         //写入globals
         for (Global global : assembler.globals) {
             writeGlobal(global);
@@ -43,22 +43,22 @@ public class BinaryCode {
 
     private void writeGlobal(Global global) throws Exception {
         //is_const
-        byte isConstant = 0x01;
-        if (global.getGlobalType() == GlobalType.VARIABLE) {
-            isConstant = 0x00;
+        byte isConstant = 0x00;
+        if (global.getGlobalType() == GlobalType.CONSTANT) {
+            isConstant = 0x01;
         }
         fileOutputStream.write(isConstant);
         //value.count
-        int globalValueCount = global.getData().length;
-        fileOutputStream.write(intTo4Byte(globalValueCount));
+        long globalValueCount = global.getData().length;
+        fileOutputStream.write(longTo4Byte(globalValueCount));
         //value
         fileOutputStream.write(global.getData());
     }
 
     private void writeFunctionList() throws Exception {
         //count
-        int functionCount = assembler.functions.size() + 1;
-        fileOutputStream.write(intTo4Byte(functionCount));
+        long functionCount = assembler.functions.size() + 1;
+        fileOutputStream.write(longTo4Byte(functionCount));
         //写入start
         writeFunction(assembler.startFunction);
         //写入列表
@@ -68,17 +68,25 @@ public class BinaryCode {
     }
 
     private void writeFunction(Function function) throws Exception {
-        int functionName = function.getGlobalOffset();
-        fileOutputStream.write(intTo4Byte(functionName));
-        int retSlots = 0;
+        //name
+        long functionName = function.getGlobalOffset();
+        fileOutputStream.write(longTo4Byte(functionName));
+        //返回值
+        long retSlots = 0;
         if (function.getReturnType() == DataType.INT || function.getReturnType() == DataType.DOUBLE) {
             retSlots = 1;
         }
-        fileOutputStream.write(intTo4Byte(retSlots));
-        int paramSlots = function.getParamSize();
-        fileOutputStream.write(intTo4Byte(paramSlots));
-        int bodyCount = function.getInstructions().size();
-        fileOutputStream.write(intTo4Byte(bodyCount));
+        fileOutputStream.write(longTo4Byte(retSlots));
+        //参数大小
+        long paramSlots = function.getParamSize();
+        fileOutputStream.write(longTo4Byte(paramSlots));
+        //局部变量数目
+        long locSlots = function.getLocalVariableSize();
+        fileOutputStream.write(longTo4Byte(locSlots));
+        //指令数目
+        long bodyCount = function.getInstructions().size();
+        fileOutputStream.write(longTo4Byte(bodyCount));
+
         //写入instructions
         for (Instruction instruction : function.getInstructions()) {
             writeInstruction(instruction);
@@ -275,21 +283,21 @@ public class BinaryCode {
 
     private void write5(byte operation, int x) throws Exception {
         fileOutputStream.write(operation);
-        fileOutputStream.write(intTo4Byte(x));
+        fileOutputStream.write(longTo4Byte(x));
     }
 
     private void write9(byte operation, int x) throws Exception {
         fileOutputStream.write(operation);
-        fileOutputStream.write(intTo4Byte(0));
-        fileOutputStream.write(intTo4Byte(x));
+        fileOutputStream.write(longTo4Byte(0));
+        fileOutputStream.write(longTo4Byte(x));
     }
 
-    private byte[] intTo4Byte(long value) {
+    private byte[] longTo4Byte(long value) {
         byte[] src = new byte[4];
         src[3] =  (byte) (value & 0xFF);
-        src[2] =  (byte) ((value>>8) & 0xFF);
-        src[1] =  (byte) ((value>>16) & 0xFF);
-        src[0] =  (byte) ((value>>24) & 0xFF);
+        src[2] =  (byte) ((value >>> 8) & 0xFF);
+        src[1] =  (byte) ((value >>> 16) & 0xFF);
+        src[0] =  (byte) ((value >>> 24) & 0xFF);
         return src;
     }
 
