@@ -16,6 +16,10 @@ public enum ErrorCode {
     /**
      * 语法分析错误
      */
+    InvalidReturnType,
+    InvalidBreak,
+    InvalidContinue,
+    NoMainFunction,
     NeedIdentifier,
     ConstantNeedValue,
     NoSemicolon,
@@ -31,6 +35,7 @@ public enum ErrorCode {
     DuplicateWithTheParam,
     NotAFunction,
     NotInitialized,
+    NoSuchParam,
     InvalidAssignment,
     InvalidPrint,
     ExpectedToken,
@@ -39,6 +44,7 @@ public enum ErrorCode {
     NotExistDataType,
     InvalidDataType,
     FunctionParamDataTypeNotMap,
-    FunctionParamsNotSuit
+    FunctionParamsNotSuit,
+    InvalidDataChange
 
 }

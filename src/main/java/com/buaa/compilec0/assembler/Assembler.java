@@ -6,14 +6,14 @@ import java.util.ArrayList;
 
 public class Assembler {
     //全局变量区
-    private ArrayList<Global> globals;
+    public ArrayList<Global> globals;
 
     //开始函数
-    private Global start;
-    private Function startFunction;
+    public Global start;
+    public Function startFunction;
 
     //函数区
-    private ArrayList<Function> functions;
+    public ArrayList<Function> functions;
 
     public Assembler() {
         globals = new ArrayList<>();
@@ -26,5 +26,31 @@ public class Assembler {
     //这里默认的是最后一个
     public void setStartFunctionGlobalOffset(int globalOffset) {
         startFunction.setGlobalOffset(globalOffset);
+    }
+
+    //增加一个函数
+    public void addFunction(Function function) {
+        functions.add(function);
+    }
+
+    public void addGlobal(Global global) {
+        globals.add(global);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder assembler = new StringBuilder();
+        for (Global global : globals) {
+            assembler.append(global.toString() + "\n\n");
+        }
+        assembler.append(start.toString() + "\n\n");
+
+        assembler.append(startFunction.toString() + "\n\n");
+
+        for (Function function : functions) {
+            assembler.append(function.toString() + "\n\n");
+        }
+
+        return assembler.toString();
     }
 }

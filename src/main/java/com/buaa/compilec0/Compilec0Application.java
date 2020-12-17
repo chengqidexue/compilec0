@@ -16,8 +16,11 @@ public class Compilec0Application {
     public static void main(String[] args) {
 
         System.out.println(args.length);
-        var inputFileName = args[0];
-        var outputFileName = args[2];
+//        var inputFileName = args[0];
+//        var outputFileName = args[2];
+
+        var inputFileName = "input.c0";
+        var outputFileName = "output.o0";
 
         printInputFile(inputFileName);
         InputStream input;

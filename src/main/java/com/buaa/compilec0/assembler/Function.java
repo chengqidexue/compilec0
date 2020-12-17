@@ -5,6 +5,16 @@ import com.buaa.compilec0.symbol.DataType;
 import java.util.ArrayList;
 
 public class Function {
+    private String functionName;
+
+    public String getFunctionName() {
+        return functionName;
+    }
+
+    public void setFunctionName(String functionName) {
+        this.functionName = functionName;
+    }
+
     private int globalOffset;                           //函数对应的全局变量id
     private DataType returnType;                        //函数的返回类型
     private int paramSize;                              //函数的参数个数
@@ -13,6 +23,10 @@ public class Function {
 
     public Function(int globalOffset) {
         this.globalOffset = globalOffset;
+        this.returnType = DataType.VOID;
+        this.paramSize = 0;
+        this.localVariableSize = 0;
+        this.instructions = new ArrayList<>();
     }
 
     public Function(int globalOffset, DataType returnType, int paramSize, int localVariableSize) {
@@ -63,6 +77,14 @@ public class Function {
         this.instructions = instructions;
     }
 
+    /**
+     * 增加一条新的指令
+     * @param instruction  指令
+     */
+    public void addInstruction(Instruction instruction) {
+        instructions.add(instruction);
+    }
+
     @Override
     public String toString() {
         int retSlot = 0;
@@ -76,8 +98,8 @@ public class Function {
             ins.append("\n    " + i + ": " + instruction.toString());
             instructionsString.append(ins.toString());
         }
-        return "fn [" + globalOffset + "] " + retSlot + " " + paramSize + "->" + localVariableSize + "{"
+        return "fn [" + globalOffset + "] " + retSlot + " " + paramSize + " -> " + localVariableSize + " {"
                 + instructionsString.toString()
-                +"}";
+                +"\n}";
     }
 }

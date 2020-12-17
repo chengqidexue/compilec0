@@ -14,7 +14,8 @@ public class AnalyserTest {
         var iter = new StringIter(scanner);
         var tokenizer = tokenize(iter);
         var analyser = new Analyser(tokenizer);
-        analyser.analyse();
+        var assembler =  analyser.analyse();
+        System.out.println(assembler);
     }
 
     private static Tokenizer tokenize(StringIter iter) {

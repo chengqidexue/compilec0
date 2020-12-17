@@ -242,6 +242,32 @@ public class SymbolTable {
     }
 
     /**
+     * 获得函数的参数个数
+     * @param functionName  函数名称
+     * @param startPos  开始位置
+     * @return  返回参数的个数
+     * @throws CompileError
+     */
+    public int getParamSizeByFunctionName(String functionName, Pos startPos) throws CompileError{
+        var paramSize = 0;
+        var table = symbolTables.get(0);
+        var functionSymbol = table.get(functionName);
+        if (functionSymbol == null) {
+            throw new AnalyzeError(ErrorCode.NotDeclared, startPos);
+        }
+        FunctionSymbol _functionSymbol;
+        if (functionSymbol instanceof FunctionSymbol) {
+            _functionSymbol = (FunctionSymbol) functionSymbol;
+            paramSize = _functionSymbol.getParamsSize();
+        }
+        else {
+            throw new AnalyzeError(ErrorCode.NotAFunction, startPos);
+        }
+        return paramSize;
+    }
+
+
+    /**
      * 判断函数中是否存在同名的参数
      * 存在的话返回该参数，否则返回null
      * @param functionName

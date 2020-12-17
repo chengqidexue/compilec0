@@ -66,7 +66,7 @@ public class Tokenizer {
             tmpString.append(ch);
             ch = it.peekChar();
         }
-        long _value = Long.parseLong(tmpString.toString());
+        int _value = Integer.parseInt(tmpString.toString());
         return new Token(TokenType.UINT_LITERAL, _value, startPos, it.currentPos());
     }
 

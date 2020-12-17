@@ -16,6 +16,10 @@ public class FunctionSymbol extends Symbol {
     private ArrayList<ParamSymbol> params;              //参数的列表
     private int localSize = 0;                          //局部变量的数量
 
+    public ArrayList<ParamSymbol> getParams() {
+        return params;
+    }
+
     /**
      *
      * @param symbolType    FUNCTION
