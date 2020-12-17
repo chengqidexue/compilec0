@@ -1,5 +1,6 @@
 package com.buaa.compilec0.analyser;
 
+import com.buaa.compilec0.assembler.BinaryCode;
 import com.buaa.compilec0.tokenizer.StringIter;
 import com.buaa.compilec0.tokenizer.Tokenizer;
 
@@ -16,6 +17,9 @@ public class AnalyserTest {
         var analyser = new Analyser(tokenizer);
         var assembler =  analyser.analyse();
         System.out.println(assembler);
+        File output = new File("output.o0");
+        BinaryCode binaryCode = new BinaryCode(assembler);
+        binaryCode.writeToOutput(output);
     }
 
     private static Tokenizer tokenize(StringIter iter) {

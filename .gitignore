@@ -43,3 +43,5 @@ build/
 
 ### others
 *.pdf
+*.o0
+*.exe

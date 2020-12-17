@@ -3,7 +3,7 @@ package com.buaa.compilec0.assembler;
 public class Instruction {
     public int index;          //顺序
     public Operation opt;      //操作符
-    public Integer x;                  //操作数
+    public Object x;                  //操作数
     private int defaultOptionNumber = -111111111;
 
     public Instruction(int index, Operation opt) {
@@ -11,7 +11,7 @@ public class Instruction {
         this.x = defaultOptionNumber;
     }
 
-    public Instruction(int index, Operation opt, Integer x) {
+    public Instruction(int index, Operation opt, Object x) {
         this.opt = opt;
         this.x = x;
     }
@@ -32,11 +32,11 @@ public class Instruction {
         this.opt = opt;
     }
 
-    public Integer getX() {
+    public Object getX() {
         return x;
     }
 
-    public void setX(Integer x) {
+    public void setX(Object x) {
         this.x = x;
     }
 
@@ -50,7 +50,7 @@ public class Instruction {
 
     @Override
     public String toString() {
-        if (x == defaultOptionNumber) {
+        if ((int) x == defaultOptionNumber) {
             return opt.toString();
         } else {
             return opt.toString() + "(" + x + ")";

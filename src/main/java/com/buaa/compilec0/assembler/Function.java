@@ -98,7 +98,7 @@ public class Function {
             ins.append("\n    " + i + ": " + instruction.toString());
             instructionsString.append(ins.toString());
         }
-        return "fn [" + globalOffset + "] " + retSlot + " " + paramSize + " -> " + localVariableSize + " {"
+        return "fn [" + globalOffset + "] " + localVariableSize + " " + paramSize + " -> " + retSlot + " {"
                 + instructionsString.toString()
                 +"\n}";
     }

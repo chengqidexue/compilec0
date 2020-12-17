@@ -711,7 +711,7 @@ public final class Analyser {
         //判断一下哪里有break
         for (int i = 0; i < nowInstructionFunction.getInstructions().size(); i++) {
             var temp = nowInstructionFunction.getInstructions().get(i);
-            if (temp.getX() == impossibleBrNum) {
+            if ((int) temp.getX() == impossibleBrNum) {
                 num = nowInstructionFunctionIndex - i;
                 temp.setX(num);
             }
