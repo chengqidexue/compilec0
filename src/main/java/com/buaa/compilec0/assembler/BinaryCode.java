@@ -99,25 +99,25 @@ public class BinaryCode {
                 write1((byte) 0x00);
                 break;
             case push:
-                write9((byte) 0x01, (int) instruction.getX());
+                write9((byte) 0x01, (long) instruction.getX());
                 break;
             case pop:
                 write1((byte) 0x02);
                 break;
             case popn:
-                write5((byte) 0x03, (int) instruction.getX());
+                write5((byte) 0x03, (long) instruction.getX());
                 break;
             case dup:
                 write1((byte) 0x04);
                 break;
             case loca:
-                write5((byte) 0x0a, (int) instruction.getX());
+                write5((byte) 0x0a, (long) instruction.getX());
                 break;
             case arga:
-                write5((byte) 0x0b, (int) instruction.getX());
+                write5((byte) 0x0b, (long) instruction.getX());
                 break;
             case globa:
-                write5((byte) 0x0c, (int) instruction.getX());
+                write5((byte) 0x0c, (long) instruction.getX());
                 break;
             case load8:
                 write1((byte) 0x10);
@@ -150,7 +150,7 @@ public class BinaryCode {
                 write1((byte) 0x19);
                 break;
             case stackalloc:
-                write5((byte) 0x1a, (int) instruction.getX());
+                write5((byte) 0x1a, (long) instruction.getX());
                 break;
             case addi:
                 write1((byte) 0x20);
@@ -237,13 +237,13 @@ public class BinaryCode {
                 write5((byte) 0x43, (int) instruction.getX());
                 break;
             case call:
-                write5((byte) 0x48, (int) instruction.getX());
+                write5((byte) 0x48, (long) instruction.getX());
                 break;
             case ret:
                 write1((byte) 0x49);
                 break;
             case callname:
-                write5((byte) 0x4a, (int) instruction.getX());
+                write5((byte) 0x4a, (long) instruction.getX());
                 break;
             case scani:
                 write1((byte) 0x50);
@@ -281,15 +281,19 @@ public class BinaryCode {
         fileOutputStream.write(operation);
     }
 
-    private void write5(byte operation, int x) throws Exception {
+    private void write5(byte operation, long x) throws Exception {
         fileOutputStream.write(operation);
         fileOutputStream.write(longTo4Byte(x));
     }
 
-    private void write9(byte operation, int x) throws Exception {
+    private void write5(byte operation, int x) throws Exception {
         fileOutputStream.write(operation);
-        fileOutputStream.write(longTo4Byte(0));
-        fileOutputStream.write(longTo4Byte(x));
+        fileOutputStream.write(intTo4Byte(x));
+    }
+
+    private void write9(byte operation, long x) throws Exception {
+        fileOutputStream.write(operation);
+        fileOutputStream.write(longTo8Byte(x));
     }
 
     private byte[] longTo4Byte(long value) {
@@ -298,6 +302,15 @@ public class BinaryCode {
         src[2] =  (byte) ((value >>> 8) & 0xFF);
         src[1] =  (byte) ((value >>> 16) & 0xFF);
         src[0] =  (byte) ((value >>> 24) & 0xFF);
+        return src;
+    }
+
+    private byte[] intTo4Byte(int value) {
+        byte[] src = new byte[4];
+        src[3] =  (byte) (value & 0xFF);
+        src[2] =  (byte) ((value >> 8) & 0xFF);
+        src[1] =  (byte) ((value >> 16) & 0xFF);
+        src[0] =  (byte) ((value >> 24) & 0xFF);
         return src;
     }
 

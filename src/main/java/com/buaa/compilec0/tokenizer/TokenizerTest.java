@@ -24,7 +24,7 @@ public class TokenizerTest {
             }
         } catch (Exception e) {
             // 遇到错误不输出，直接退出
-            System.err.println(e);
+            e.printStackTrace();
             System.exit(0);
             return;
         }

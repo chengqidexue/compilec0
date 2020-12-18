@@ -15,13 +15,13 @@ public class Function {
         this.functionName = functionName;
     }
 
-    private int globalOffset;                           //函数对应的全局变量id
+    private long globalOffset;                           //函数对应的全局变量id
     private DataType returnType;                        //函数的返回类型
     private int paramSize;                              //函数的参数个数
     private int localVariableSize;                      //函数的局部变量的个数
     private ArrayList<Instruction> instructions;
 
-    public Function(int globalOffset) {
+    public Function(long globalOffset) {
         this.globalOffset = globalOffset;
         this.returnType = DataType.VOID;
         this.paramSize = 0;
@@ -29,7 +29,7 @@ public class Function {
         this.instructions = new ArrayList<>();
     }
 
-    public Function(int globalOffset, DataType returnType, int paramSize, int localVariableSize) {
+    public Function(long globalOffset, DataType returnType, int paramSize, int localVariableSize) {
         this.globalOffset = globalOffset;
         this.returnType = returnType;
         this.paramSize = paramSize;
@@ -37,11 +37,11 @@ public class Function {
         this.instructions = new ArrayList<>();
     }
 
-    public int getGlobalOffset() {
+    public long getGlobalOffset() {
         return globalOffset;
     }
 
-    public void setGlobalOffset(int globalOffset) {
+    public void setGlobalOffset(long globalOffset) {
         this.globalOffset = globalOffset;
     }
 

@@ -29,7 +29,7 @@ public class FunctionSymbol extends Symbol {
      * @param offset        globalOffset
      * @param startPos      开始的位置
      */
-    public FunctionSymbol(SymbolType symbolType, DataType dataType, String symbolName, int level, int offset, Pos startPos) {
+    public FunctionSymbol(SymbolType symbolType, DataType dataType, String symbolName, int level, long offset, Pos startPos) {
         super(symbolType, dataType, symbolName, level, offset, startPos);
         this.paramsMap = new HashMap<>();
         this.params = new ArrayList<>();

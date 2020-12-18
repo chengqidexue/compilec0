@@ -97,7 +97,7 @@ public class SymbolTable {
      * @throws CompileError 编译错误
      */
     public void addVariableSymbol(DataType dataType, String symbolName, int level,
-                                         int offset, Pos startPos, boolean initialized) throws CompileError {
+                                         long offset, Pos startPos, boolean initialized) throws CompileError {
         if (isSymbolExistedInSameLevel(level, symbolName, startPos)) {
 
             throw new AnalyzeError(ErrorCode.DuplicateDeclaration, startPos);
@@ -140,7 +140,7 @@ public class SymbolTable {
      * @throws CompileError 编译错误
      */
     public void addConstantSymbol(DataType dataType, String symbolName, int level,
-                                         int offset, Pos startPos) throws CompileError {
+                                         long offset, Pos startPos) throws CompileError {
         if (isSymbolExistedInSameLevel(level, symbolName, startPos)) {
             throw new AnalyzeError(ErrorCode.DuplicateDeclaration, startPos);
         }
@@ -159,7 +159,7 @@ public class SymbolTable {
      * @throws CompileError 编译错误
      */
     public void addFunctionSymbol(DataType dataType, String symbolName, int level,
-                                         int offset, Pos startPos) throws CompileError {
+                                         long offset, Pos startPos) throws CompileError {
         if (isSymbolExistedInSameLevel(level, symbolName, startPos)) {
             throw new AnalyzeError(ErrorCode.DuplicateDeclaration, startPos);
         }
@@ -179,7 +179,7 @@ public class SymbolTable {
      * @throws CompileError
      */
     public void addFunctionParamSymbol(String functionName, DataType dataType, String symbolName, int level,
-                                       int offset, Pos startPos, boolean isConstant) throws CompileError{
+                                       long offset, Pos startPos, boolean isConstant) throws CompileError{
         var table = symbolTables.get(0);
         var functionSymbol = table.get(functionName);
         if (functionSymbol == null) {

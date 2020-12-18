@@ -52,7 +52,6 @@ public class StringIter {
             }
             linesBuffer.add(nextLine + '\n');
         }
-        // todo:check read \n?
         initialized = true;
     }
 

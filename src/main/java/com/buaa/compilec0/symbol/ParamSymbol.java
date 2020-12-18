@@ -14,7 +14,7 @@ public class ParamSymbol extends Symbol{
      * @param startPos      开始位置
      * @param isConstant    是不是常量
      */
-    public ParamSymbol(SymbolType symbolType, DataType dataType, String symbolName, int level, int offset, Pos startPos, boolean isConstant) {
+    public ParamSymbol(SymbolType symbolType, DataType dataType, String symbolName, int level, long offset, Pos startPos, boolean isConstant) {
         super(symbolType, dataType, symbolName, level+1, offset, startPos);
         this.isConstant = isConstant;
     }

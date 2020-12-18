@@ -7,10 +7,10 @@ public class Symbol {
     private DataType dataType;          //数据类型，如果是函数的话，就是返回类型
     private String symbolName;          //符号的名称ident
     private int level;                  //符号所在的层次
-    private int offset;
+    private long offset;
     private Pos startPos;               //符号的起始位置
 
-    public Symbol(SymbolType symbolType, DataType dataType, String symbolName, int level, int offset, Pos startPos) {
+    public Symbol(SymbolType symbolType, DataType dataType, String symbolName, int level, long offset, Pos startPos) {
         this.symbolType = symbolType;
         this.dataType = dataType;
         this.symbolName = symbolName;
@@ -71,11 +71,11 @@ public class Symbol {
         this.level = level;
     }
 
-    public int getOffset() {
+    public long getOffset() {
         return offset;
     }
 
-    public void setOffset(int offset) {
+    public void setOffset(long offset) {
         this.offset = offset;
     }
 }

@@ -7,6 +7,7 @@ public enum ErrorCode {
     NoError,        // Should be only used internally.
     StreamError,
     EOF,
+    InvalidDouble,
     InvalidInput,
     InvalidString,
     InvalidChar,

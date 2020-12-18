@@ -3,7 +3,6 @@ package com.buaa.compilec0.tokenizer;
 import com.buaa.compilec0.error.ErrorCode;
 import com.buaa.compilec0.error.TokenizeError;
 import com.buaa.compilec0.util.Pos;
-import org.springframework.expression.spel.SpelEvaluationException;
 
 public class Tokenizer {
 
@@ -32,8 +31,8 @@ public class Tokenizer {
         }
         char peek = it.peekChar();
         if (Character.isDigit(peek)) {
-            //分析整数
-            return lexUInt();
+            //分析整数或者double
+            return lexUIntOrDouble();
         } else if (Character.isAlphabetic(peek) || peek == '_') {
             //分析标识符或者关键字,保留字
             return lexIdentOrKeyword();
@@ -86,11 +85,12 @@ public class Tokenizer {
         if (r != '\'') {
             throw new TokenizeError(ErrorCode.InvalidChar, startPos);
         }
-        Token token = new Token(TokenType.UINT_LITERAL, (int) ch, startPos, it.currentPos());
+        Token token = new Token(TokenType.UINT_LITERAL, (long) ch, startPos, it.currentPos());
         return token;
     }
 
-    private Token lexUInt() throws TokenizeError {
+    //分析是int还是double
+    private Token lexUIntOrDouble() throws TokenizeError {
         Pos startPos = new Pos(it.currentPos().row, it.currentPos().col);
         StringBuilder tmpString = new StringBuilder();
         char ch = it.peekChar();
@@ -99,10 +99,47 @@ public class Tokenizer {
             tmpString.append(ch);
             ch = it.peekChar();
         }
-        int _value = Integer.parseInt(tmpString.toString());
-        return new Token(TokenType.UINT_LITERAL, _value, startPos, it.currentPos());
+        if (ch == '.') {
+            ch = it.nextChar();
+            tmpString.append(ch);       //.
+            ch = it.peekChar();
+            if (!Character.isDigit(ch)) {
+                throw new TokenizeError(ErrorCode.InvalidDouble, it.currentPos());
+            }
+            while (Character.isDigit(ch)) {
+                ch = it.nextChar();
+                tmpString.append(ch);
+                ch = it.peekChar();
+            }                       //.digit+
+
+            if (ch == 'E' || ch == 'e') {   //.digit+[Ee]
+                ch = it.nextChar();
+                tmpString.append(ch);       //e
+                ch = it.peekChar();
+                if (ch == '+' || ch == '-') {   //+
+                    ch = it.nextChar();
+                    tmpString.append(ch);
+                    ch = it.peekChar();
+                }
+                if (!Character.isDigit(ch)) {
+                    throw new TokenizeError(ErrorCode.InvalidDouble, it.currentPos());
+                }
+                while (Character.isDigit(ch)) {
+                    ch = it.nextChar();
+                    tmpString.append(ch);
+                    ch = it.peekChar();
+                }
+            }
+            double _value = Double.parseDouble(tmpString.toString());
+            return new Token(TokenType.DOUBLE_LITERAL, _value, startPos, it.currentPos());
+        }
+        else {
+            long _value = Long.parseLong(tmpString.toString());
+            return new Token(TokenType.UINT_LITERAL, _value, startPos, it.currentPos());
+        }
     }
 
+    //分析是关键字还是ident
     private Token lexIdentOrKeyword() throws TokenizeError {
         Pos startPos = new Pos(it.currentPos().row, it.currentPos().col);
         StringBuilder tmpString = new StringBuilder();

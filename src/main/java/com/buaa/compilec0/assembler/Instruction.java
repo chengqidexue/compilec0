@@ -42,20 +42,18 @@ public class Instruction {
         this.x = x;
     }
 
-    public int getDefaultOptionNumber() {
+    public long getDefaultOptionNumber() {
         return defaultOptionNumber;
-    }
-
-    public void setDefaultOptionNumber(int defaultOptionNumber) {
-        this.defaultOptionNumber = defaultOptionNumber;
     }
 
     @Override
     public String toString() {
-        if ((int) x == defaultOptionNumber) {
+        if (Long.parseLong(x.toString()) == defaultOptionNumber) {
             return opt.toString();
         } else {
             return opt.toString() + "(" + x + ")";
         }
     }
 }
+//4607182418800017408
+//4607182418800017408
