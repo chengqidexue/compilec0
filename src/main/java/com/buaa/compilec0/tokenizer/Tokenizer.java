@@ -40,7 +40,11 @@ public class Tokenizer {
         } else if (peek == '"') {
             //分析字符串常量
             return lexStringLiteral();
-        } else {
+        } else if (peek == '\'') {
+            //分析字符
+            return lexChar();
+        }
+        else {
             //分析运算符
             var token = lexOperatorOrUnknown();
             if (token.getTokenType() == TokenType.COMMENT) {
@@ -52,6 +56,38 @@ public class Tokenizer {
             }
             return token;
         }
+    }
+
+    private Token lexChar() throws TokenizeError {
+        it.nextChar();  //'
+        Pos startPos = new Pos(it.currentPos().row, it.currentPos().col);
+        char ch = it.nextChar(); //char
+        var ascii = Integer.valueOf(ch);
+        if (ch == '\'') {
+            throw new TokenizeError(ErrorCode.InvalidChar, startPos);
+        }
+        if (ascii == 0x5c) {
+            char r = it.nextChar();
+            if (r == '\'') {
+                ch = '\'';
+            } else if (r == '"') {
+                ch = '"';
+            } else if (r == 'n') {
+                ch = '\n';
+            } else if (r == 't') {
+                ch = '\t';
+            } else if (r == 'r') {
+                ch = '\r';
+            } else {
+                throw new TokenizeError(ErrorCode.InvalidChar, startPos);
+            }
+        }
+        char r = it.nextChar();
+        if (r != '\'') {
+            throw new TokenizeError(ErrorCode.InvalidChar, startPos);
+        }
+        Token token = new Token(TokenType.UINT_LITERAL, (int) ch, startPos, it.currentPos());
+        return token;
     }
 
     private Token lexUInt() throws TokenizeError {

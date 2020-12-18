@@ -9,6 +9,7 @@ public enum ErrorCode {
     EOF,
     InvalidInput,
     InvalidString,
+    InvalidChar,
     InvalidIdentifier,
     IntegerOverflow, // int32_t overflow.
     NoBegin,

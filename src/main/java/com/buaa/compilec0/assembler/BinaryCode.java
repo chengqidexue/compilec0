@@ -301,4 +301,11 @@ public class BinaryCode {
         return src;
     }
 
+    private byte[] longTo8Byte(long value) {
+        byte[] src = new byte[8];
+        for (int i = 7; i >= 0; i--) {
+            src[i] = (byte) ((value >>> (8*(7-i))) & 0xFF);
+        }
+        return src;
+    }
 }
