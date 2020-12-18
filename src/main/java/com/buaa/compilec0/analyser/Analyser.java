@@ -446,6 +446,9 @@ public final class Analyser {
         //ty
         var type = expectType();
         var dataType = getDataTypeFromToken(type);
+        if (dataType == DataType.VOID) {
+            throw new AnalyzeError(ErrorCode.InvalidDataType, type.getStartPos());
+        }
 
         //判断这是一个全局变量还是一个局部变量
         int offset;
@@ -643,6 +646,10 @@ public final class Analyser {
                 throw new AnalyzeError(ErrorCode.InvalidReturnType, next.getStartPos());
             }
             nowInstructionFunction.addInstruction(new Instruction(nowInstructionFunctionIndex++, Operation.store64));
+        } else {
+            if (nowInstructionFunction.getReturnType() != DataType.VOID) {
+                throw new AnalyzeError(ErrorCode.InvalidReturnType, next.getStartPos());
+            }
         }
         //;
         expect(TokenType.SEMICOLON);

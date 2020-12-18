@@ -44,10 +44,11 @@ public class Tokenizer {
             //分析运算符
             var token = lexOperatorOrUnknown();
             if (token.getTokenType() == TokenType.COMMENT) {
-                var line = token.getStartPos().row;
-                while (token.getStartPos().row == line) {
-                    token = nextToken();
+                char ch = it.peekChar();
+                while (ch != '\n') {
+                    ch = it.nextChar();
                 }
+                token = nextToken();
             }
             return token;
         }
