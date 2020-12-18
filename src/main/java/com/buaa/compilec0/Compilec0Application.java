@@ -19,9 +19,6 @@ public class Compilec0Application {
         System.out.println(args.length);
         var inputFileName = args[0];
         var outputFileName = args[2];
-//
-//        var inputFileName = "input.c0";
-//        var outputFileName = "output.o0";
 
         printInputFile(inputFileName);
         InputStream input;
@@ -47,7 +44,7 @@ public class Compilec0Application {
             var analyser = new Analyser(tokenizer);
             var assembler =  analyser.analyse();
 //            System.out.println(assembler);
-            File output = new File("output.o0");
+            File output = new File(outputFileName);
             BinaryCode binaryCode = new BinaryCode(assembler);
             binaryCode.writeToOutput(output);
         } catch (Exception e) {
